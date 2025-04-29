@@ -5,7 +5,6 @@ import ContentSection from "../../components/ContentSection";
 import Footer from "../../components/Footer";
 import Head from "next/head";
 import { useIsomorphicLayoutEffect } from "../../utils";
-import { stagger } from "../../animations";
 import Button from "../../components/Button";
 import BlogEditor from "../../components/BlogEditor";
 import { useRouter } from "next/router";
@@ -18,9 +17,7 @@ const BlogPost = ({ post }) => {
   const textTwo = useRef();
   const router = useRouter();
 
-  useIsomorphicLayoutEffect(() => {
-    stagger([textOne.current, textTwo.current], { y: 30 }, { y: 0 });
-  }, []);
+  
 
   return (
     <>
