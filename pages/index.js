@@ -21,7 +21,7 @@ export default function KnowYou() {
     if (linkOrNotes) formData.append("styleNotes", linkOrNotes);
     if (file) formData.append("file", file);
   
-    const res = await fetch("http://localhost:5000/api/persona", {
+    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona", {
       method: "POST",
       body: formData
     });
@@ -35,7 +35,7 @@ export default function KnowYou() {
   
   const handleSkip = async () => {
     // Call backend with empty form
-    const res = await fetch("http://localhost:5000/api/persona", {
+    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona", {
       method: "POST"
     });
   

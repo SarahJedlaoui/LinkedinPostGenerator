@@ -16,7 +16,7 @@ export default function Topics() {
     if (!topic) return;
     (async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/trending", {
+        const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/trending", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic }),

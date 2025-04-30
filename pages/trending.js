@@ -62,14 +62,14 @@ export default function TopicPicker() {
     setLoading(true); // Start loading UI
     try {
       // Save the topic
-      await fetch("http://localhost:5000/api/persona/topic", {
+      await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/topic", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, topic }),
       });
 
       // ✅ Generate and save questions
-      await fetch("http://localhost:5000/api/persona/questions", {
+      await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),

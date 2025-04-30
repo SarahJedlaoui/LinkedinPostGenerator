@@ -12,6 +12,7 @@ export default function BuildPost() {
   const [currentStep, setCurrentStep] = useState(0);
   const [input, setInput] = useState("");
   const [platform, setPlatform] = useState("LinkedIn");
+  const [finalAnswerSaved, setFinalAnswerSaved] = useState(false);
 
   useEffect(() => {
     setInput(answers[currentStep] || "");
@@ -52,7 +53,7 @@ export default function BuildPost() {
 
     const fetchQuestions = async () => {
       const res = await fetch(
-        "http://localhost:5000/api/persona/session/" + sessionId
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/session/" + sessionId
       );
       const data = await res.json();
       if (data.questions?.length) {
@@ -70,14 +71,22 @@ export default function BuildPost() {
     const updated = [...answers];
     updated[currentStep] = input.trim();
     setAnswers(updated);
-    if (currentStep < questions.length - 1) {
+  
+    if (currentStep === questions.length - 1) {
+      setFinalAnswerSaved(true); // ✅ mark as saved
+    } else {
       setCurrentStep(currentStep + 1);
     }
   };
+  
 
   const handleQuestionClick = (index) => {
+    if (index !== questions.length - 1) {
+      setFinalAnswerSaved(false); // going back = needs re-confirmation
+    }
     setCurrentStep(index);
   };
+  
 
   const handleFinish = async () => {
     const updated = [...answers];
@@ -87,7 +96,7 @@ export default function BuildPost() {
     const sessionId = localStorage.getItem("sessionId");
   
     try {
-      await fetch("http://localhost:5000/api/persona/answers", {
+      await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/answers", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, answers: updated })
@@ -182,7 +191,7 @@ export default function BuildPost() {
           </button>
         </div>
 
-        {currentStep === questions.length - 1 ? (
+        {currentStep === questions.length - 1 && finalAnswerSaved ? (
           <button
             onClick={handleFinish}
             disabled={!input.trim()}
