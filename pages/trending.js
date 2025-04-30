@@ -37,10 +37,13 @@ export default function TopicPicker() {
   const [openSections, setOpenSections] = useState(Object.keys(topicData));
   const [selected, setSelected] = useState("");
   const [customIdea, setCustomIdea] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const toggleSection = (section) => {
     setOpenSections((prev) =>
-      prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]
+      prev.includes(section)
+        ? prev.filter((s) => s !== section)
+        : [...prev, section]
     );
   };
 
@@ -48,18 +51,45 @@ export default function TopicPicker() {
     setSelected((prev) => (prev === topic ? "" : topic));
   };
 
-  const handleContinue = () => {
-    const final = customIdea.trim() || selected;
-    console.log("Chosen topic:", final);
+  const handleContinue = async () => {
+    const topic = customIdea.trim() || selected;
+    const sessionId = localStorage.getItem("sessionId");
+
+    if (!topic || !sessionId) {
+      alert("Missing topic or session ID");
+      return;
+    }
+    setLoading(true); // Start loading UI
+    try {
+      // Save the topic
+      await fetch("http://localhost:5000/api/persona/topic", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, topic }),
+      });
+
+      // ✅ Generate and save questions
+      await fetch("http://localhost:5000/api/persona/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      router.push("/guided-post");
+    } catch (err) {
+      console.error("Failed to save topic:", err);
+      alert("Something went wrong saving your topic.");
+      setLoading(false); // Reset if something goes wrong
+    }
   };
 
   // Speech-to-text setup
   useEffect(() => {
-    if (!('webkitSpeechRecognition' in window)) return;
+    if (!("webkitSpeechRecognition" in window)) return;
     const recognition = new webkitSpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.lang = 'en-US';
+    recognition.lang = "en-US";
     const mic = document.getElementById("mic");
     if (mic) {
       mic.onclick = () => {
@@ -91,12 +121,17 @@ export default function TopicPicker() {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </Link>
 
-        <h1 className="text-2xl font-bold font-serif mb-2">
-          What’s on your mind today?
+        <h1 className="text-2xl font-bold font-serif mb-2 mt-5">
+          What&apos;s on your mind today?
         </h1>
         <p className="text-sm text-[#6B6B6B] mb-6">
           Choose a trending topic or enter your own.
@@ -144,20 +179,22 @@ export default function TopicPicker() {
             placeholder="Got a different idea? Tell me what you’d like to post about."
             className="w-full bg-transparent outline-none placeholder:text-[#D57B59]/70"
           />
-          <button id="mic" type="button" className="text-xl">🎤</button>
+          <button id="mic" type="button" className="text-xl">
+            🎤
+          </button>
         </div>
 
         <button
           onClick={handleContinue}
-          disabled={!customIdea && !selected}
+          disabled={(!customIdea && !selected) || loading}
           className={`w-full rounded-full py-4 text-sm font-medium shadow-md transition
-            ${
-              customIdea || selected
-                ? "bg-[#D57B59] text-white"
-                : "bg-[#D57B59]/40 text-white/70 cursor-not-allowed"
-            }`}
+    ${
+      (!customIdea && !selected) || loading
+        ? "bg-[#D57B59]/40 text-white/70 cursor-not-allowed"
+        : "bg-[#D57B59] text-white"
+    }`}
         >
-          Continue
+          {loading ? "Thinking..." : "Continue"}
         </button>
       </div>
     </div>
