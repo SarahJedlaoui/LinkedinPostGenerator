@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
-import Cursor from "../components/Cursor";
-import data from "../data/portfolio.json";
 
 export default function Home() {
   const router = useRouter();
@@ -16,18 +14,16 @@ export default function Home() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-between
-                     bg-[#FAF9F7] ${data.showCursor ? "cursor-none" : ""}`}
+      className={`min-h-screen flex flex-col items-center justify-between bg-[#FAF9F7]`}
     >
-      {data.showCursor && <Cursor />}
 
       <Head>
-        <title>{data.name}</title>
+        <title>Sophia</title>
         <meta name="Sophia" content="width=device-width,initial-scale=1" />
       </Head>
 
       {/* ----------------- 1 · Logo ------------- */}
-      <div className="pt-40 sm:pt-26">
+      <div className="pt-40 sm:pt-26 laptop:pt-8">
         <Image
           src="/images/sophia.svg"
           alt="Sophia logo"
@@ -39,7 +35,7 @@ export default function Home() {
       </div>
 
       {/* --------------- 2 · Question & input --------------- */}
-      <main className="w-full max-w-[430px] px-6 flex flex-col gap-8 -mt-28">
+      <main className="w-full max-w-[430px] px-6 flex flex-col gap-8 -mt-28 laptop:pt-28">
         <h1 className="text-center font-serif font-semibold leading-tight text-[28px] sm:text-3xl">
           Hey!
           <br />

@@ -121,7 +121,7 @@ export default function TopicPicker() {
                     className={`px-3 py-1 text-sm rounded-full border transition
                       ${
                         selected === topic
-                          ? "bg-[#D57B59] text-white border-black"
+                          ? "bg-[#D57B59] text-white border-[#D57B59]"
                           : "border-black text-black"
                       }`}
                   >
