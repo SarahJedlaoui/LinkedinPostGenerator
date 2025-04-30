@@ -1,13 +1,10 @@
-/* ----------------------------------------------------------------------
-   pages/know-you.jsx
-   ------------------------------------------------------------------ */
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import Cursor from "../components/Cursor";
-import data from "../data/portfolio.json";
+
+
 
 /* helper: fake upload delay ------------------------------------------- */
 const fakeUpload = () => new Promise((r) => setTimeout(r, 800)); // simulate network
@@ -31,13 +28,12 @@ export default function KnowYou() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-[#FAF9F7]
-                     ${data.showCursor ? "cursor-none" : ""}`}
+      className={`min-h-screen flex flex-col bg-[#FAF9F7]`}
     >
-      {data.showCursor && <Cursor />}
+    
 
       <Head>
-        <title>{data.name} – Match your style</title>
+        <title>Sophia – Match your style</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </Head>
 

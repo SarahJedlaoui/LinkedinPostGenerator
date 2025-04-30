@@ -3,8 +3,6 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import Cursor from "../components/Cursor";
-import data from "../data/portfolio.json";
 
 export default function Topics() {
   const router = useRouter();
@@ -51,13 +49,11 @@ export default function Topics() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-[#FAF9F7]
-                  ${data.showCursor ? "cursor-none" : ""}`}
+      className={`min-h-screen flex flex-col bg-[#FAF9F7]`}
     >
-      {data.showCursor && <Cursor />}
 
       <Head>
-        <title>{data.name} – Topics</title>
+        <title>Sophia – Topics</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </Head>
 
