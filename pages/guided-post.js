@@ -102,7 +102,7 @@ export default function BuildPost() {
         body: JSON.stringify({ sessionId, answers: updated })
       });
   
-      router.push("/post-preview"); // Replace with your next page
+      router.push("/post"); // Replace with your next page
     } catch (err) {
       console.error("Failed to save answers:", err);
       alert("Something went wrong while saving your answers.");
