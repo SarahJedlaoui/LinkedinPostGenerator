@@ -20,7 +20,7 @@ export default function BuildPost() {
       if (!sessionId) return alert("No session");
 
       const res = await fetch(
-        `http://localhost:5000/api/persona/session/${sessionId}`
+        `https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/session/${sessionId}`
       );
       const data = await res.json();
       if (data.questions?.length) {
@@ -74,14 +74,14 @@ export default function BuildPost() {
       try {
         const sessionId = localStorage.getItem("sessionId");
         await fetch(
-          "http://localhost:5000/api/persona/answers",
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/answers",
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ sessionId, answers: updated }),
           }
         );
-        router.push("/post-preview");
+        router.push("/post");
       } catch (err) {
         console.error(err);
         alert("Failed to save answers.");
@@ -107,33 +107,52 @@ export default function BuildPost() {
       </Head>
 
       <div>
-       
-        
-
-
         <Link href="/pick-quest" className="mb-10 inline-block text-[#D57B59]">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </Link>
-     
 
-      {/* Progress & Title */}
-      <div className="mb-4 mt-4">
-        <div className="flex gap-2 mb-1">
-          <div className="flex-1 h-1 bg-[#D57B59] rounded-full" />
-          <div className="flex-1 h-1 bg-[#D57B59] rounded-full" />
-          <div className="flex-1 h-1 bg-[#EDE8E2] rounded-full" />
+        {/* Progress & Title */}
+        <div className="mb-4 mt-4">
+          {/* Progress */}
+          <div className="flex gap-2 mb-1 mt-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`flex-1 h-2 rounded-full ${
+                  i === 0
+                    ? "bg-[#D57B59]"
+                    : i === 1
+                    ? "bg-[#D57B59]"
+                    : i === 2
+                    ? "bg-[#D57B59]"
+                    : "bg-[#EDE8E2]"
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-[#D57B59] text-sm">Step 3 of 4</p>
+          <h1 className="text-2xl font-bold font-serif mt-1 mb-1">
+            Great take! 🧠
+          </h1>
+          <p className="text-md text-[#6B6B6B]">
+            Let’s break it down and build your narrative together.
+          </p>
         </div>
-        <p className="text-[#D57B59] text-sm">Step 2 of 3</p>
-        <h1 className="text-2xl font-bold font-serif mt-1 mb-1">Great take! 🧠</h1>
-        <p className="text-md text-[#6B6B6B]">
-          Let’s break it down and build your narrative together.
-        </p>
-      </div>
 
-    
-     {/* Single question card */}
+        {/* Single question card */}
         <div className=" flex-1 bg-white overflow-y-auto rounded-xl border p-6 mb-4">
           <p className="text-sm font-semibold mb-4">
             Q{currentStep + 1}. {questions[currentStep]}
@@ -151,7 +170,9 @@ export default function BuildPost() {
       {/* Footer: speech, buttons */}
       <div className="sticky bottom-0 bg-[#FAF9F7] pt-4 pb-6">
         <div className="flex items-center gap-3 mb-4">
-          <button id="mic" className="text-xl text-[#D57B59]">🎤</button>
+          <button id="mic" className="text-xl text-[#D57B59]">
+            🎤
+          </button>
           <span className="text-sm text-[#6B6B6B]">
             {isLast ? `Answer and finish` : `Answer and go deeper`}
           </span>
@@ -167,11 +188,7 @@ export default function BuildPost() {
                 : "bg-[#D57B59] text-white active:scale-95"
             }`}
         >
-          {loading
-            ? "Saving…"
-            : isLast
-            ? "Finish"
-            : "Go deeper"}
+          {loading ? "Saving…" : isLast ? "Finish" : "Go deeper"}
         </button>
       </div>
     </div>

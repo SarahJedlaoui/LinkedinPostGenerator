@@ -101,8 +101,22 @@ export default function PostPreview() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
-
-        <h1 className="text-2xl font-bold font-serif mt-5 mb-2">Here’s your post, ready to publish.</h1>
+        {/* Progress */}
+        <div className="flex gap-2 mb-1 mt-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`flex-1 h-2 rounded-full ${
+                  i === 0
+                    ? "bg-[#D57B59]"
+                    
+                    : "bg-[#D57B59]"
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-[#D57B59] text-sm mb-4">Step 4 of 4</p>
+        <h1 className="text-2xl font-bold font-serif mt-5 mb-2">🎉 Here’s your post, ready to publish.</h1>
         <p className="text-sm text-[#6B6B6B] mb-6">
           Based on your input, we’ve crafted a high-value post. Want to make edits or fact-check it?
         </p>

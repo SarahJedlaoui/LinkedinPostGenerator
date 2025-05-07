@@ -83,16 +83,7 @@ export default function Page() {
           body: JSON.stringify({ sessionId, question }),
         }
       );
-
-      // ✅ Generate and save questions
-      await fetch(
-        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/questionsV2",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId }),
-        }
-      );
+      
       await fetch(
         "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/insights",
         {
@@ -124,7 +115,7 @@ export default function Page() {
             />
           ))}
         </div>
-        <p className="text-[#D57B59] text-xs mb-4">Step 1 of 4</p>
+        <p className="text-[#D57B59] text-sm mb-4">Step 1 of 4</p>
 
         {/* Title + subtitle */}
         <h1 className="text-2xl font-bold font-serif mb-1">
