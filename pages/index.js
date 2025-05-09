@@ -1,174 +1,217 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/router";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { EffectCoverflow } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-coverflow";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
-
-
-export default function KnowYou() {
+export default function TrendingPage() {
   const router = useRouter();
-  const [linkOrNotes, setLinkOrNotes] = useState("");
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [topics, setTopics] = useState([]);
+  const [selectedTopicIndex, setSelectedTopicIndex] = useState(0);
+  const [userCount, setUserCount] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const pastelColors = ["#D6EAF8", "#FADBD8", "#FCF3CF", "#D5F5E3"];
+  const [loading, setLoading] = useState(false);
+  const hasInitialized = useRef(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  const handleContinue = async () => {
-    setUploading(true);
-  
-    const formData = new FormData();
-  
-    // If they enter notes, append them
-    if (linkOrNotes) formData.append("styleNotes", linkOrNotes);
-    if (file) formData.append("file", file);
-  
-    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona", {
-      method: "POST",
-      body: formData
-    });
-  
-    const data = await res.json();
-    localStorage.setItem("sessionId", data.sessionId);
-  
-    setUploading(false);
-    router.push("/trending");
+  // ✅ 1. Fetch Topics + Session Setup
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    const setupSessionAndTopics = async () => {
+      try {
+        // Fetch topics
+        const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topics/trending");
+        const data = await res.json();
+        setTopics(data.topics);
+        setSelectedTopicIndex(0);
+
+        // Check session
+        let storedId = localStorage.getItem("sessionId");
+        if (!storedId) {
+          const sessionRes = await fetch(
+            "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona",
+            {
+              method: "POST",
+            }
+          );
+          const sessionData = await sessionRes.json();
+          storedId = sessionData.sessionId;
+          localStorage.setItem("sessionId", storedId);
+        }
+        setSessionId(storedId);
+        setUserCount(Math.floor(Math.random() * 3000) + 1000);
+      } catch (err) {
+        console.error("Init error:", err);
+      }
+    };
+
+    setupSessionAndTopics();
+  }, []);
+
+  // ✅ 2. Handle Start
+  const handleStart = async () => {
+    if (!topics[selectedTopicIndex] || !sessionId) return;
+
+    const topic = topics[selectedTopicIndex].topic;
+     const question = topics[selectedTopicIndex].questions[currentQuestionIndex];
+
+    setLoading(true);
+
+    try {
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/topic",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, topic }),
+        }
+      );
+
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/question",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, question }),
+        }
+      );
+
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/insights",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, question }),
+        }
+      );
+
+      router.push("/details");
+    } catch (err) {
+      console.error("Failed to save:", err);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  const handleSkip = async () => {
-    // Call backend with empty form
-    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona", {
-      method: "POST"
-    });
-  
-    const data = await res.json();
-    localStorage.setItem("sessionId", data.sessionId);
-  
-    router.push("/trending");
-  };
-  
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-[#FAF9F7]`}
-    >
-    
-
-      <Head>
-        <title>Sophia – Match your style</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-      </Head>
-
-      {/* Logo top-left */}
-      <header className="pt-6 pl-6">
-        <Link href="/" scroll={false}>
-          <Image
-            src="/images/sophia.svg"
-            alt="Sophia logo"
-            width={32}
-            height={32}
-            className="cursor-pointer"
-            priority
-          />
-        </Link>
-      </header>
-
-      {/* Main card */}
-      <main className="flex-1 w-full max-w-[430px] mx-auto px-6 flex flex-col gap-6">
-        {/* Headline */}
-        <h1 className="font-serif font-semibold text-[32px] sm:text-3xl leading-tight mt-10">
-          Let’s match your style
+    <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-between px-5 py-8 font-sans">
+      {/* Top + Scrollable Content */}
+      <div className="flex flex-col justify-start mt-5">
+        <h1 className="text-2xl font-bold text-[#222] mb-1">
+          Choose your Content Quest for today
         </h1>
-
-        <p className="text-sm text-[#6B6B6B] leading-relaxed">
-          Upload a post, video, or article you’ve created. We’ll learn your tone
-          and interests.
+        <p className="text-sm text-[#6c6c6c] mb-3">
+          Progress unlocked: You’re in the game.
         </p>
 
-        {/* 1 · Link or Notes box with custom icon */}
-        <label
-          className="flex flex-col items-center justify-center gap-3
-                  rounded-xl border border-[#E7DCD7] bg-white px-5 py-6
-                  text-sm text-[#D57B59] cursor-text"
-        >
-          {/* Your uploaded icon */}
-          <Image
-            src="/images/LinkSimpleHorizontal.svg" // adjust path if needed
-            alt="link icon"
-            width={30}
-            height={30}
-            priority
-          />
+        <div className="h-2 w-full bg-[#EAE7DE] rounded-full mb-4">
+          <div className="h-full bg-[#A48CF1] rounded-full w-[25%]"></div>
+        </div>
 
-          {/* Textarea */}
-          <textarea
-            rows={2}
-            value={linkOrNotes}
-            onChange={(e) => setLinkOrNotes(e.target.value)}
-            placeholder="Paste a link or drop some notes"
-            className="w-full text-center placeholder:text-[#D57B59]/70
-               text-[#D57B59] text-sm bg-transparent border-none
-               focus:outline-none focus:ring-0 resize-none"
-          />
-        </label>
-
-        {/* 2 · File upload box */}
-        <label
-          htmlFor="file-input"
-          className="flex flex-col items-center justify-center gap-2
-                        rounded-xl border border-[#E7DCD7] bg-white px-5 py-6
-                        text-sm text-[#D57B59] cursor-pointer"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          {file ? (
-            <span className="text-[#6B6B6B]">{file.name}</span>
-          ) : (
-            <span>Upload PDF, video or screenshot</span>
-          )}
-          <input
-            id="file-input"
-            type="file"
-            accept=".pdf,image/*,video/*"
-            className="hidden"
-            onChange={(e) => setFile(e.target.files[0] || null)}
-          />
-        </label>
-      </main>
-
-      {/* Footer buttons */}
-      <div className="w-full max-w-[430px] mx-auto px-6 pb-10 flex justify-between">
-        <button
-          onClick={handleSkip} 
-          className="text-[#D7AFA2] text-sm"
-        >
-          Skip
-        </button>
-
-        <button
-          onClick={handleContinue}
-          disabled={uploading || (!file && !linkOrNotes)}
-          className={`rounded-full px-10 py-4 text-lg font-medium shadow-md
-                         transition active:scale-95
-                         ${
-                           uploading || (!file && !linkOrNotes)
-                             ? "bg-[#D57B59]/40 text-white/70 cursor-not-allowed"
-                             : "bg-[#D57B59] text-white"
-                         }`}
-        >
-          {uploading ? "Uploading…" : "Continue"}
-        </button>
+        <div className="flex overflow-x-auto gap-2 mb-4 whitespace-nowrap no-scrollbar">
+          {topics.map((t, i) => (
+            <button
+              key={i}
+              className={`px-4 py-1.5 text-sm rounded-xl transition-all ${
+                selectedTopicIndex === i
+                  ? "bg-[#A48CF1] text-white"
+                  : "border border-black text-black"
+              }`}
+              onClick={() => setSelectedTopicIndex(i)}
+            >
+              {t.topic}
+            </button>
+          ))}
+        </div>
       </div>
+      <div>
+        <h2 className="text-3xl font-semibold text-center font-medium -mb-10">
+          Today’s Question
+        </h2>
+      </div>
+
+      <div>
+        {topics[selectedTopicIndex]?.questions && (
+          <div className="mb-6">
+            <Swiper
+              modules={[EffectCoverflow]}
+              effect="coverflow"
+              grabCursor={true}
+              centeredSlides={true}
+              slidesPerView={1.2}
+              spaceBetween={-40}
+              onSlideChange={(swiper) => setCurrentQuestionIndex(swiper.realIndex)}
+              coverflowEffect={{
+                rotate: 0,
+                stretch: 0,
+                depth: 150,
+                modifier: 1.5,
+                slideShadows: false,
+              }}
+              className="h-[360px]"
+            >
+              {topics[selectedTopicIndex].questions.map((question, index) => (
+                <SwiperSlide key={index}>
+                  <div
+                    className="w-[280px] h-[320px] mx-auto rounded-xl border border-black shadow-[4px_4px_0px_black] relative flex flex-col items-center justify-center p-6 text-center text-lg font-semibold"
+                    style={{
+                      backgroundColor:
+                        pastelColors[index % pastelColors.length],
+                    }}
+                  >
+                    <div className="text-sm text-[#444] mb-2">
+                      {topics[selectedTopicIndex].topic}
+                    </div>
+                    <span className="z-10">{question}</span>
+                    <Image
+                      src="/images/!.svg"
+                      alt="question icon"
+                      className="absolute bottom-4 right-4"
+                      width={96}
+                      height={96}
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        )}
+
+        {userCount && (
+          <div className="text-center text-3xl text-[#222] font-medium mb-6">
+            {userCount.toLocaleString()} users are working on this today
+          </div>
+        )}
+      </div>
+
+      {/* Bottom button */}
+      <button
+        disabled={loading}
+        onClick={handleStart}
+        className={`w-full py-4 text-white text-lg font-semibold rounded-xl shadow-[4px_4px_0px_black] transition-all ${
+          loading ? "bg-[#A48CF1]/70" : "bg-[#A48CF1]"
+        }`}
+      >
+        {loading ? (
+          <div className="flex justify-center items-center gap-2">
+            <span>Collecting information</span>
+            <div className="bouncing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        ) : (
+          "Start Challenge"
+        )}
+      </button>
     </div>
   );
 }
