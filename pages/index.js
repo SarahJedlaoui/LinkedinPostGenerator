@@ -17,6 +17,7 @@ export default function TrendingPage() {
   const [loading, setLoading] = useState(false);
   const hasInitialized = useRef(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+   const [messageIndex, setMessageIndex] = useState(0);
   const loadingMessages = [
     "Collecting information...",
     "Thanks for your patience!",
@@ -111,7 +112,7 @@ export default function TrendingPage() {
     if (!loading) return;
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 1200); // ⏱️ 1.2s per message
+    }, 4000); // ⏱️ 1.2s per message
 
     return () => clearInterval(interval);
   }, [loading]);
