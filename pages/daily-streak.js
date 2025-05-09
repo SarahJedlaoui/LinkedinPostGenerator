@@ -52,7 +52,7 @@ export default function DailyStreakPage() {
         <div>
           <h3 className="text-center text-2xl font-bold ">6 days streak!</h3>
           <p className="text-center text-xl text-[#6B6B6B] mb-4">
-            You're on fire
+            You&apos;re on fire
           </p>
         </div>
         <div>
