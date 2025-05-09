@@ -17,6 +17,12 @@ export default function TrendingPage() {
   const [loading, setLoading] = useState(false);
   const hasInitialized = useRef(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const loadingMessages = [
+    "Collecting information...",
+    "Thanks for your patience!",
+    "Almost there — promise 🤞",
+    "Good things take time ⏳",
+  ];
 
   // ✅ 1. Fetch Topics + Session Setup
   useEffect(() => {
@@ -26,7 +32,9 @@ export default function TrendingPage() {
     const setupSessionAndTopics = async () => {
       try {
         // Fetch topics
-        const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topics/trending");
+        const res = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topics/trending"
+        );
         const data = await res.json();
         setTopics(data.topics);
         setSelectedTopicIndex(0);
@@ -59,7 +67,7 @@ export default function TrendingPage() {
     if (!topics[selectedTopicIndex] || !sessionId) return;
 
     const topic = topics[selectedTopicIndex].topic;
-     const question = topics[selectedTopicIndex].questions[currentQuestionIndex];
+    const question = topics[selectedTopicIndex].questions[currentQuestionIndex];
 
     setLoading(true);
 
@@ -99,7 +107,14 @@ export default function TrendingPage() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+    }, 1200); // ⏱️ 1.2s per message
 
+    return () => clearInterval(interval);
+  }, [loading]);
   return (
     <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-between px-5 py-8 font-sans">
       {/* Top + Scrollable Content */}
@@ -147,7 +162,9 @@ export default function TrendingPage() {
               centeredSlides={true}
               slidesPerView={1.2}
               spaceBetween={-40}
-              onSlideChange={(swiper) => setCurrentQuestionIndex(swiper.realIndex)}
+              onSlideChange={(swiper) =>
+                setCurrentQuestionIndex(swiper.realIndex)
+              }
               coverflowEffect={{
                 rotate: 0,
                 stretch: 0,
@@ -201,7 +218,7 @@ export default function TrendingPage() {
       >
         {loading ? (
           <div className="flex justify-center items-center gap-2">
-            <span>Collecting information</span>
+            <span>{loadingMessages[messageIndex]}</span>
             <div className="bouncing-dots">
               <span></span>
               <span></span>

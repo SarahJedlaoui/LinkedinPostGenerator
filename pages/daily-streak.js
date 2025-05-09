@@ -39,9 +39,8 @@ export default function DailyStreakPage() {
 
       <div className="bg-[#DCD1F4] h-[600px] rounded-xl p-6 shadow-[6px_6px_0px_black] border border-black flex flex-col justify-between">
         <h2 className="text-3xl font-semibold text-center mb-2">
-          You Made It Today, And We’re So Glad You Did
+          You Made It Today, And We&apos;re So Glad You Did
         </h2>
-
         <div className="flex justify-center my-6">
           <Image
             src="/images/big-flame.png"
