@@ -148,8 +148,8 @@ export default function TrendingPage() {
         </div>
       </div>
       <div>
-        <h2 className="text-3xl font-semibold text-center font-medium mb-2">
-          Today&apos;s Question
+        <h2 className="text-3xl font-semibold text-center font-medium ">
+          Today’s Question
         </h2>
       </div>
 
