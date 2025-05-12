@@ -112,7 +112,7 @@ export default function TrendingPage() {
     if (!loading) return;
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 4000); // ⏱️ 1.2s per message
+    }, 5000); // 4s per message
 
     return () => clearInterval(interval);
   }, [loading]);
@@ -124,7 +124,7 @@ export default function TrendingPage() {
           Choose your Content Quest for today
         </h1>
         <p className="text-sm text-[#6c6c6c] mb-3">
-          Progress unlocked: You’re in the game.
+          Progress unlocked: You&apos;re in the game.
         </p>
 
         <div className="h-2 w-full bg-[#EAE7DE] rounded-full mb-4">
@@ -148,8 +148,8 @@ export default function TrendingPage() {
         </div>
       </div>
       <div>
-        <h2 className="text-3xl font-semibold text-center font-medium -mb-10">
-          Today’s Question
+        <h2 className="text-3xl font-semibold text-center font-medium mb-2">
+          Today&apos;s Question
         </h2>
       </div>
 

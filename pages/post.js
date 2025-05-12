@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FiThumbsUp, FiThumbsDown, FiCopy } from "react-icons/fi";
 import { FaLinkedinIn, FaInstagram, FaTiktok } from "react-icons/fa";
 import ChatEditor from "../components/ChatEditor";
-
+import { useRouter } from "next/router";
 const THEMES = {
   LinkedIn: {
     bg: "bg-[#0077B5]",
@@ -21,6 +21,7 @@ const THEMES = {
 };
 
 export default function PostPreview() {
+  const router = useRouter();
   const [platform, setPlatform] = useState("LinkedIn");
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(null);
@@ -33,8 +34,28 @@ export default function PostPreview() {
   const [sources, setSources] = useState([]);
   const [facts, setFacts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [drafts, setDrafts] = useState([]);
 
   const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    const fetchDrafts = async () => {
+      const sessionId = localStorage.getItem("sessionId");
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/drafts",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        }
+      );
+      const data = await res.json();
+      setDrafts(data.drafts || []);
+    };
+
+    fetchDrafts();
+  }, []);
+
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -74,11 +95,14 @@ export default function PostPreview() {
     if (!sessionId) return alert("No session found");
 
     try {
-      const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/fact-check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
-      });
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/fact-check",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        }
+      );
 
       if (!res.ok) throw new Error(await res.text());
 
@@ -136,38 +160,57 @@ export default function PostPreview() {
         </div>
 
         {/* Post Card */}
-        <div className="rounded-xl border border-black bg-white shadow-[4px_4px_0px_black] mb-4 overflow-hidden">
-          <div
-            className={`${THEMES[platform].bg} text-white text-sm font-medium px-4 py-2 flex justify-between items-center`}
-          >
-            <span>Your post is ready</span>
-            <span>{THEMES[platform].icon}</span>
-          </div>
-
-          <div className="p-4 text-sm whitespace-pre-line text-[#333]">
-            {loading ? "Generating post..." : postText}
-          </div>
-
-          <div className="flex justify-between items-center px-4 py-2 border-t border-black/10 text-sm">
-            <div className="flex gap-4 text-lg text-black">
-              <FiThumbsUp
-                className={`cursor-pointer ${
-                  liked === true ? "text-green-600" : ""
-                }`}
-                onClick={() => setLiked(true)}
-              />
-              <FiThumbsDown
-                className={`cursor-pointer ${
-                  liked === false ? "text-red-500" : ""
-                }`}
-                onClick={() => setLiked(false)}
-              />
+        <div className="overflow-x-auto flex gap-4 pb-4 mb-4">
+          {/* Main Generated Post */}
+          <div className="min-w-[300px]  flex flex-col justify-between rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]">
+            <div
+              className={`${THEMES[platform].bg} rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2 flex justify-between items-center`}
+            >
+              <span>Your post is ready</span>
+              <span>{THEMES[platform].icon}</span>
             </div>
-            <button onClick={handleCopy} className="flex items-center gap-1">
-              <FiCopy />
-              {copied ? "Copied!" : "Copy"}
-            </button>
+            <div className="p-4 text-sm whitespace-pre-line text-[#333]">
+              {loading ? "Generating post..." : postText}
+            </div>
+            <div className="flex justify-between items-center px-4 py-2 border-t border-black/10 text-sm mt-auto">
+              <div className="flex gap-4 text-lg text-black">
+                <FiThumbsUp
+                  className={`cursor-pointer ${
+                    liked === true ? "text-green-600" : ""
+                  }`}
+                  onClick={() => setLiked(true)}
+                />
+                <FiThumbsDown
+                  className={`cursor-pointer ${
+                    liked === false ? "text-red-500" : ""
+                  }`}
+                  onClick={() => setLiked(false)}
+                />
+              </div>
+              <button onClick={handleCopy} className="flex items-center gap-1">
+                <FiCopy />
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
           </div>
+
+          {/* Drafts */}
+          {drafts.map((draft, i) => (
+            <div
+              key={i}
+              className="min-w-[300px] rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]"
+            >
+              <div className="bg-gray-800 rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2">
+                Draft #{i + 1}
+              </div>
+              <div className="p-4 text-sm whitespace-pre-line text-[#333]">
+                {draft.content}
+              </div>
+              <div className="px-4 py-2 text-sm text-right text-[#A48CF1]">
+                Saved: {new Date(draft.editedAt).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
         </div>
 
         {!factChecked && (
@@ -298,7 +341,10 @@ export default function PostPreview() {
           {isEditing ? "Close Editor" : "Edit post"}
         </button>
 
-        <button className="bg-[#A48CF1] text-white font-semibold px-6 py-3 rounded-xl shadow-[4px_4px_0px_black]">
+        <button
+          onClick={() => router.push("/journey")}
+          className="bg-[#A48CF1] text-white font-semibold px-6 py-3 rounded-xl shadow-[4px_4px_0px_black]"
+        >
           Finalize Post
         </button>
       </div>
