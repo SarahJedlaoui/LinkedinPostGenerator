@@ -39,7 +39,7 @@ export default function TrendingPage() {
         const data = await res.json();
         setTopics(data.topics);
         setSelectedTopicIndex(0);
-
+        localStorage.removeItem("sessionId");
         // Check session
         let storedId = localStorage.getItem("sessionId");
         if (!storedId) {
