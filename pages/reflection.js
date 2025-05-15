@@ -12,9 +12,10 @@ export default function ReflectionPage() {
   const [answers, setAnswers] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [mainQuestion, setMainQuestion] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialQuestion = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) return;
 
@@ -22,12 +23,16 @@ export default function ReflectionPage() {
         `https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/insights/${sessionId}`
       );
       const session = await res.json();
-
-      setQuestions(session.questions || []);
       setMainQuestion(session.chosenQuestion || "");
+      console.log("Session loaded:", session);
+      // Get the first followUpQuestion from session
+      const first = session.questions?.[0];
+      if (first) {
+        setQuestions([first]);
+      }
     };
 
-    loadData();
+    loadInitialQuestion();
   }, []);
 
   const handleNext = async () => {
@@ -36,10 +41,36 @@ export default function ReflectionPage() {
     setAnswers(updated);
     setInput("");
 
-    if (currentStep === questions.length - 1) {
-      await finish(updated);
-    } else {
+    if (currentStep === questions.length - 1 && questions.length < 4) {
+      setGenerating(true);
+      const sessionId = localStorage.getItem("sessionId");
+      try {
+        const res = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/deep-questions",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              previousAnswer: updated[currentStep],
+            }),
+          }
+        );
+        const newQs = await res.json();
+        const extended = [...questions, ...newQs];
+        setQuestions(extended.slice(0, 4));
+        setTimeout(() => {
+          setCurrentStep(currentStep + 1);
+          setGenerating(false);
+        }, 100); // slight delay to ensure state update
+      } catch (err) {
+        console.error("Failed to fetch deep questions", err);
+        setGenerating(false);
+      }
+    } else if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
+    } else {
+      await finish(updated);
     }
   };
 
@@ -47,14 +78,15 @@ export default function ReflectionPage() {
     setLoading(true);
     try {
       const sessionId = localStorage.getItem("sessionId");
-      await fetch(
-        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/answers",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId, answers: answersToSend }),
-        }
-      );
+      await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/answers", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          questions,
+          answers: answersToSend,
+        }),
+      });
       router.push("/post");
     } catch (err) {
       console.error(err);
@@ -67,7 +99,7 @@ export default function ReflectionPage() {
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-[#FAF9F7] px-5 py-6 flex flex-col font-sans">
       <div>
-          {/* Back and title */}
+        {/* Back and title */}
         <div className="flex items-center gap-2 mb-3">
           <Link href="/details">
             <span className="text-2xl font-bold">←</span>
@@ -96,13 +128,16 @@ export default function ReflectionPage() {
       <div className="flex flex-col bg-white border border-black rounded-xl p-4 flex-grow mb-6">
         <div className="flex-grow">
           <p className="text-sm mb-2 text-black font-semibold">
-            {questions[currentStep]}
+            {generating
+              ? "Generating next question..."
+              : questions[currentStep]}
           </p>
+
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Write"
-            className="w-full h-full resize-none text-sm text-[#444] outline-none border-none"
+            placeholder="Write your thoughts..."
+            className="w-full min-h-[180px] resize-none text-sm text-[#444] outline-none border-none"
           />
         </div>
         {/* Buttons pinned at the bottom */}
@@ -115,7 +150,7 @@ export default function ReflectionPage() {
             Finish
           </button>
 
-          {currentStep < questions.length - 1 && (
+          {currentStep < 3 && (
             <button
               onClick={handleNext}
               disabled={loading || !input.trim()}

@@ -2,13 +2,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+
 export default function InsightPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
+  const [insight, setInsight] = useState(null);
 
   useEffect(() => {
-    const fetchInsights = async () => {
+    const fetchData = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) {
         alert("No session ID found.");
@@ -16,37 +18,57 @@ export default function InsightPage() {
       }
 
       try {
+        // Step 1: Get session data (which topic + question was chosen)
         const res = await fetch(
           `https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/insights/${sessionId}`
         );
-        const result = await res.json();
-        setSession(result);
+        const sessionData = await res.json();
+        setSession(sessionData);
+
+        const { topic, chosenQuestion } = sessionData;
+
+        // Step 2: Fetch full topics (already includes insights)
+        const topicRes = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3");
+        const topicsData = await topicRes.json();
+
+        const matchedTopic = topicsData.find((t) => t.topic === topic);
+        if (!matchedTopic) throw new Error("Topic not found");
+
+        const matchedInsight = matchedTopic.insights.find(
+          (i) => i.question === chosenQuestion
+        );
+        if (!matchedInsight) throw new Error("Insight not found");
+
+        setInsight(matchedInsight);
         setLoading(false);
         await fetch(
-          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/questionsV2",
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/followup",
           {
-            method: "POST",
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId }),
+            body: JSON.stringify({
+              sessionId: sessionData.sessionId,
+              followUpQuestion: matchedInsight.followUpQuestion,
+            }),
           }
         );
       } catch (err) {
-        console.error("Failed to fetch insights", err);
+        console.error("Error loading insight page:", err);
         setLoading(false);
       }
     };
 
-    fetchInsights();
+    fetchData();
   }, []);
 
   const topic = session?.topic || "Loading...";
   const question = session?.chosenQuestion || "Loading question...";
-  const quickTake = session?.insights?.quickTake || "Loading summary...";
-  const keyIdeas = session?.insights?.keyIdeas || [];
-  const quote = session?.insights?.expertQuote?.quote || "";
-  const author = session?.insights?.expertQuote?.author || "";
-  const title = session?.insights?.expertQuote?.title || "";
-  const fastFacts = session?.insights?.fastFacts || [];
+  const quickTake = insight?.quickTake || "Loading summary...";
+  const keyIdeas = insight?.keyIdeas || [];
+  const quote = insight?.expertQuote?.quote || "";
+  const author = insight?.expertQuote?.author || "";
+  const title = insight?.expertQuote?.title || "";
+  const fastFacts = insight?.fastFacts || [];
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-[#FAF9F7] font-sans flex flex-col justify-between pb-8">

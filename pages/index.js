@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react"; 
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -17,7 +17,7 @@ export default function TrendingPage() {
   const [loading, setLoading] = useState(false);
   const hasInitialized = useRef(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-   const [messageIndex, setMessageIndex] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
   const loadingMessages = [
     "Collecting information...",
     "Thanks for your patience!",
@@ -32,15 +32,26 @@ export default function TrendingPage() {
 
     const setupSessionAndTopics = async () => {
       try {
-        // Fetch topics
+        // Fetch topics from new V3 route
         const res = await fetch(
-          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topics/trending"
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3"
         );
         const data = await res.json();
-        setTopics(data.topics);
+
+        // Transform backend structure into expected format
+        const transformed = data.map((item) => ({
+          topic: item.topic,
+          questions: item.insights.map((insight) => insight.question),
+          insights: item.insights,
+        }));
+
+        setTopics(transformed);
+        console.log("Fetched topics:", transformed);
         setSelectedTopicIndex(0);
+
+        // Reset session
         localStorage.removeItem("sessionId");
-        // Check session
+
         let storedId = localStorage.getItem("sessionId");
         if (!storedId) {
           const sessionRes = await fetch(
@@ -91,14 +102,7 @@ export default function TrendingPage() {
         }
       );
 
-      await fetch(
-        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/insights",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId, question }),
-        }
-      );
+      // ❌ Removed insights generation — now comes preloaded from backend
 
       router.push("/details");
     } catch (err) {
@@ -108,14 +112,16 @@ export default function TrendingPage() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (!loading) return;
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 5000); // 4s per message
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [loading]);
+
   return (
     <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-between px-5 py-8 font-sans">
       {/* Top + Scrollable Content */}
