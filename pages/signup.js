@@ -1,6 +1,8 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
 import Link from "next/link";
+
+
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -8,7 +10,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignup = async () => {
-    const router = useRouter();
+    
     if (password !== confirmPassword) return alert("Passwords do not match");
 
     const res = await fetch(
