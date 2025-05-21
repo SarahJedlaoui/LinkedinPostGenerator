@@ -1,9 +1,10 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
-import { useRouter } from "next/router";
+import Link from "next/link";
+
 
 export default function SignupPage() {
-  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -84,7 +85,7 @@ export default function SignupPage() {
       </button>
 
       <div className="my-6 text-center text-sm text-gray-500">
-        Don't have an account?{" "}
+        Don&lsquo;t have an account?{" "}
        <Link href="/signup">
           <span className="text-[#9284EC] underline">Signup</span>
         </Link>

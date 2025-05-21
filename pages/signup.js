@@ -1,6 +1,5 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
 export default function SignupPage() {
   const [name, setName] = useState("");
