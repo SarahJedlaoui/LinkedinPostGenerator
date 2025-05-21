@@ -1,30 +1,42 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 export default function SignupPage() {
-  const [name, setName] = useState("");
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignup = async () => {
-    if (password !== confirmPassword) return alert("Passwords do not match");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      return alert("Please enter both email and password.");
+    }
 
-    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+    try {
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-    const data = await res.json();
-    if (data.success) {
-    localStorage.setItem("token", data.token); // ✅ Store JWT
-    localStorage.setItem("userId", data.userId); // Optional: store userId
-    window.location.href = "/topics?user=" + data.userId;
-  } else {
-    alert(data.error || "Signup failed");
-  }
-};
+      const data = await res.json();
+
+      if (data.success) {
+        // ✅ Store token and userId for protected routes
+        localStorage.setItem("token", data.token); // ⚠️ You must send token back in the response now
+        localStorage.setItem("userId", data.userId);
+        router.push(`/topics?user=${data.userId}&token=${data.token}`);
+      } else {
+        alert(data.error || "Login failed");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Something went wrong. Try again.");
+    }
+  };
 
   const handleLinkedInLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
@@ -39,34 +51,23 @@ export default function SignupPage() {
 
   return (
     <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-center px-6 py-12 font-sans">
-      <h1 className="text-3xl font-bold mb-2">Welcome To Sophia 👋</h1>
+      <h1 className="text-3xl font-bold mb-2">Hello there 👋</h1>
       <p className="text-sm text-gray-600 mb-6">
-        Please enter your email & password to create an account.
+        Please enter your email & password to login.
       </p>
+
       <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Full name"
-        className="w-full px-4 py-3 border rounded-xl mb-4"
-      />
-      <input
+        type="email"
+        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
         className="w-full px-4 py-3 border rounded-xl mb-4"
       />
       <input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
         type="password"
         placeholder="Password"
-        className="w-full px-4 py-3 border rounded-xl mb-4"
-      />
-      <input
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        type="password"
-        placeholder="Confirm Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         className="w-full px-4 py-3 border rounded-xl mb-4"
       />
 
@@ -76,17 +77,15 @@ export default function SignupPage() {
       </label>
 
       <button
-        onClick={handleSignup}
+        onClick={handleLogin}
         className="w-full py-3 bg-[#9284EC] text-white font-semibold rounded-xl shadow-[2px_2px_0px_black]"
       >
-        Sign up
+        Sign in
       </button>
 
       <div className="my-6 text-center text-sm text-gray-500">
-        Already have an account?{" "}
-        <a className="text-[#9284EC] underline" href="/login">
-          Log in
-        </a>
+        Don't have an account?{" "}
+        <a className="text-[#9284EC] underline" href="/signup">Sign up</a>
       </div>
 
       <div className="mt-4">
@@ -94,7 +93,7 @@ export default function SignupPage() {
           onClick={handleLinkedInLogin}
           className="w-full py-3 border border-[#0077B5] text-[#0077B5] font-semibold rounded-xl flex items-center justify-center gap-2"
         >
-          <FaLinkedin /> Sign up with LinkedIn
+          <FaLinkedin /> Sign in with LinkedIn
         </button>
       </div>
     </div>

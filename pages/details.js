@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { requireAuth } from "../utils/requireAuth";
+
 
 export default function InsightPage() {
   const router = useRouter();
@@ -10,10 +12,11 @@ export default function InsightPage() {
   const [insight, setInsight] = useState(null);
 
   useEffect(() => {
+    requireAuth();
     const fetchData = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) {
-        alert("No session ID found.");
+        console.log("No session ID found.");
         return;
       }
 
@@ -28,7 +31,9 @@ export default function InsightPage() {
         const { topic, chosenQuestion } = sessionData;
 
         // Step 2: Fetch full topics (already includes insights)
-        const topicRes = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3");
+        const topicRes = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3"
+        );
         const topicsData = await topicRes.json();
 
         const matchedTopic = topicsData.find((t) => t.topic === topic);
