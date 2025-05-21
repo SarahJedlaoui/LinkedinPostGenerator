@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
-import Link from "next/link";
+
 import { FiThumbsUp, FiThumbsDown, FiCopy } from "react-icons/fi";
 import { FaLinkedinIn, FaInstagram, FaTiktok } from "react-icons/fa";
 import ChatEditor from "../components/ChatEditor";
 import { useRouter } from "next/router";
+import Link from "next/link";
 const THEMES = {
   LinkedIn: {
     bg: "bg-[#0077B5]",

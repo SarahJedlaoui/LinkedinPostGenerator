@@ -1,6 +1,7 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
-
+import { useRouter } from "next/router";
+import Link from "next/link";
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -8,23 +9,27 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignup = async () => {
+    const router = useRouter();
     if (password !== confirmPassword) return alert("Passwords do not match");
 
-    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+    const res = await fetch(
+      "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/signup",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      }
+    );
 
     const data = await res.json();
     if (data.success) {
-    localStorage.setItem("token", data.token); // ✅ Store JWT
-    localStorage.setItem("userId", data.userId); // Optional: store userId
-    window.location.href = "/topics?user=" + data.userId;
-  } else {
-    alert(data.error || "Signup failed");
-  }
-};
+      localStorage.setItem("token", data.token); // ✅ Store JWT
+      localStorage.setItem("userId", data.userId); // Optional: store userId
+      window.location.href = "/topics?user=" + data.userId;
+    } else {
+      alert(data.error || "Signup failed");
+    }
+  };
 
   const handleLinkedInLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
@@ -84,9 +89,9 @@ export default function SignupPage() {
 
       <div className="my-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <a className="text-[#9284EC] underline" href="/login">
-          Log in
-        </a>
+        <Link href="/login">
+          <span className="text-[#9284EC] underline"> Log in</span>
+        </Link>
       </div>
 
       <div className="mt-4">

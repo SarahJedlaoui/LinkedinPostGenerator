@@ -85,7 +85,9 @@ export default function SignupPage() {
 
       <div className="my-6 text-center text-sm text-gray-500">
         Don't have an account?{" "}
-        <a className="text-[#9284EC] underline" href="/signup">Sign up</a>
+       <Link href="/signup">
+          <span className="text-[#9284EC] underline">Signup</span>
+        </Link>
       </div>
 
       <div className="mt-4">
