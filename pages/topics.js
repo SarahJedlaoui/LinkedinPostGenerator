@@ -7,6 +7,7 @@ import "swiper/css";
 import "swiper/css/effect-coverflow";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { requireAuth } from "../utils/requireAuth";
+
 export default function TrendingPage() {
   const router = useRouter();
   const [topics, setTopics] = useState([]);
