@@ -51,11 +51,14 @@ export default function PostPreview() {
 
   const fetchDrafts = async () => {
     const sessionId = localStorage.getItem("sessionId");
-    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/drafts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    });
+    const res = await fetch(
+      "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/drafts",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      }
+    );
     const data = await res.json();
     setDrafts(data.drafts || []);
   };
@@ -69,11 +72,14 @@ export default function PostPreview() {
 
     const fetchPost = async () => {
       try {
-        const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId }),
-        });
+        const res = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/generate",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
+          }
+        );
 
         const data = await res.json();
         setPostText(
@@ -137,11 +143,14 @@ export default function PostPreview() {
     setShowRating(true);
 
     try {
-      const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/rate-post", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, post: postText }),
-      });
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/rate-post",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, post: postText }),
+        }
+      );
       const data = await res.json();
       setRatingFeedback(data.feedback || "No feedback received.");
     } catch (err) {
@@ -156,11 +165,14 @@ export default function PostPreview() {
     if (isInlineEditing) {
       const sessionId = localStorage.getItem("sessionId");
       try {
-        await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/save-post", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId, post: editedPostText }),
-        });
+        await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/save-post",
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId, post: editedPostText }),
+          }
+        );
         setPostText(editedPostText);
       } catch (err) {
         console.error("Failed to save post", err);
@@ -179,28 +191,37 @@ export default function PostPreview() {
 
     try {
       // Save current main post as a draft
-      await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/save-draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, content: postText }),
-      });
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/save-draft",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, content: postText }),
+        }
+      );
 
       // Set the selected draft as the new main post
-      await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/save-post", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, post: newPostText }),
-      });
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/save-post",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, post: newPostText }),
+        }
+      );
 
       // Update UI
       setPostText(newPostText);
 
       // Re-fetch drafts to see updated version
-      const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/drafts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
-      });
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/drafts",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        }
+      );
       const data = await res.json();
       setDrafts(data.drafts || []);
     } catch (err) {
@@ -253,7 +274,7 @@ export default function PostPreview() {
         {/* Post Card Section */}
         <div className="overflow-x-auto flex gap-4 pb-4 mb-4">
           {/* Main Generated Post */}
-          <div className="min-w-[300px] h-[320px] flex flex-col rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]">
+          <div className="w-[350px] min-w-[300px] h-[320px] flex flex-col rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]">
             <div
               className={`${THEMES[platform].bg} rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2 flex justify-between items-center`}
             >
@@ -261,9 +282,14 @@ export default function PostPreview() {
               <span>{THEMES[platform].icon}</span>
             </div>
 
-            <div className="p-4 text-sm text-[#333] overflow-auto flex-1 whitespace-pre-line">
+            <div
+              className="p-4 text-sm text-[#333] overflow-auto whitespace-pre-line"
+              style={{ minHeight: "200px", flexGrow: 1 }}
+            >
               {loading ? (
-                "Generating post..."
+                <div className="min-h-[200px] flex items-center justify-center text-gray-500">
+                  Generating post...
+                </div>
               ) : isInlineEditing ? (
                 <textarea
                   value={editedPostText}
@@ -271,24 +297,19 @@ export default function PostPreview() {
                   className="w-full h-full text-sm text-[#333] border border-[#ddd] rounded-lg p-2 resize-none"
                 />
               ) : (
-                postText
+                <div className="min-h-[200px]">{postText}</div>
               )}
             </div>
 
             <div className="flex items-center px-4 py-2 border-t border-black/10 text-sm">
               <div className="flex gap-4 text-lg text-black">
-                <FiThumbsUp
-                  className={`cursor-pointer ${
-                    liked === true ? "text-green-600" : ""
-                  }`}
-                  onClick={() => setLiked(true)}
-                />
-                <FiThumbsDown
-                  className={`cursor-pointer ${
-                    liked === false ? "text-red-500" : ""
-                  }`}
-                  onClick={() => setLiked(false)}
-                />
+                <button
+                  onClick={handleRatePost}
+                  disabled={ratingLoading}
+                  className="text-sm text-[#A48CF1] font-semibold"
+                >
+                  {showRating ? " Hide feedback" : " Rate my post"}
+                </button>
               </div>
 
               <div className="flex gap-4 items-center ml-auto">
@@ -302,7 +323,7 @@ export default function PostPreview() {
 
                 <button
                   onClick={handleEditToggle}
-                  className="text-xs text-[#A48CF1] font-semibold"
+                  className="text-sm text-[#A48CF1] font-semibold"
                 >
                   {isInlineEditing ? "Save" : "Edit here"}
                 </button>
@@ -347,16 +368,118 @@ export default function PostPreview() {
           >
             {showFacts ? "🙈 Hide facts" : "🧠 Fact check"}
           </button>
-
-          <button
-            onClick={handleRatePost}
-            disabled={ratingLoading}
-            className="text-sm bg-[#A48CF1] text-white px-4 py-2 rounded-xl mb-4 shadow-[2px_2px_0px_black]"
-          >
-            {showRating ? "🙈 Hide feedback" : "🤖 Rate my post"}
-          </button>
         </div>
+        {!isEditing && factChecked && showFacts && (
+          <div>
+            {/* Tabs */}
+            <div className="flex gap-6 border-b border-[#E7DCD7] text-sm mb-3">
+              <button
+                onClick={() => setActiveTab("facts")}
+                className={`pb-1 ${
+                  activeTab === "facts"
+                    ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
+                    : ""
+                }`}
+              >
+                🧠 Facts
+              </button>
+              <button
+                onClick={() => setActiveTab("highlights")}
+                className={`pb-1 ${
+                  activeTab === "highlights"
+                    ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
+                    : ""
+                }`}
+              >
+                ✅ Highlights
+              </button>
+              <button
+                onClick={() => setActiveTab("sources")}
+                className={`pb-1 ${
+                  activeTab === "sources"
+                    ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
+                    : ""
+                }`}
+              >
+                📄 Sources
+              </button>
+            </div>
 
+            {/* Tab Content */}
+            {loadingFacts ? (
+              <p className="text-sm text-[#999]">
+                Loading fact-check results...
+              </p>
+            ) : activeTab === "facts" ? (
+              facts.length === 0 ? (
+                <p className="text-sm text-[#999]">No facts available.</p>
+              ) : (
+                facts.map((fact, index) => (
+                  <div
+                    key={index}
+                    className={`relative mb-4 p-4 rounded-xl border border-black shadow-[4px_4px_0px_black] text-sm font-semibold`}
+                    style={{
+                      backgroundColor: ["#FDE68A", "#D1FAE5", "#FCD5CE"][
+                        index % 3
+                      ],
+                    }}
+                  >
+                    <p className="mb-3">{fact.fact}</p>
+                    <button className="bg-white text-black text-xs font-medium px-3 py-1 rounded-xl shadow-[2px_2px_0px_black]">
+                      Add this to your post
+                    </button>
+                    <div className="absolute bottom-2 right-2 text-xl">🧠</div>
+                  </div>
+                ))
+              )
+            ) : activeTab === "highlights" ? (
+              highlights.length === 0 ? (
+                <p className="text-sm text-[#999]">
+                  No fact-check highlights found.
+                </p>
+              ) : (
+                highlights.map((fact, index) => (
+                  <div
+                    key={index}
+                    className="mb-4 text-sm bg-white p-3 rounded-lg border border-[#E7DCD7]"
+                  >
+                    <p className="font-semibold mb-1">Claim: “{fact.claim}”</p>
+                    <p>
+                      {fact.verdict === "confirmed"
+                        ? "✅"
+                        : fact.verdict === "incorrect"
+                        ? "❌"
+                        : "⚠️"}{" "}
+                      {fact.explanation}
+                    </p>
+                  </div>
+                ))
+              )
+            ) : sources.length === 0 ? (
+              <p className="text-sm text-[#999]">No sources provided.</p>
+            ) : (
+              sources.map((source, index) => (
+                <div
+                  key={index}
+                  className="mb-4 text-sm bg-white p-3 rounded-lg border border-[#E7DCD7] break-words"
+                >
+                  <p className="font-semibold mb-1">{source.title}</p>
+                  <p className="mb-1">{source.snippet}</p>
+                  <div className="overflow-x-auto">
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#A48CF1] underline break-all"
+                    >
+                      {source.url}
+                    </a>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
         {showRating && (
           <div className="bg-white border border-black rounded-xl p-4 text-sm mt-2 mb-5 shadow-[4px_4px_0px_black]">
             <p className="font-semibold mb-2">AI Feedback:</p>
@@ -368,121 +491,12 @@ export default function PostPreview() {
           </div>
         )}
       </div>
-      {!isEditing && factChecked && showFacts && (
-        <div>
-          {/* Tabs */}
-          <div className="flex gap-6 border-b border-[#E7DCD7] text-sm mb-3">
-            <button
-              onClick={() => setActiveTab("facts")}
-              className={`pb-1 ${
-                activeTab === "facts"
-                  ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
-                  : ""
-              }`}
-            >
-              🧠 Facts
-            </button>
-            <button
-              onClick={() => setActiveTab("highlights")}
-              className={`pb-1 ${
-                activeTab === "highlights"
-                  ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
-                  : ""
-              }`}
-            >
-              ✅ Highlights
-            </button>
-            <button
-              onClick={() => setActiveTab("sources")}
-              className={`pb-1 ${
-                activeTab === "sources"
-                  ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
-                  : ""
-              }`}
-            >
-              📄 Sources
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          {loadingFacts ? (
-            <p className="text-sm text-[#999]">Loading fact-check results...</p>
-          ) : activeTab === "facts" ? (
-            facts.length === 0 ? (
-              <p className="text-sm text-[#999]">No facts available.</p>
-            ) : (
-              facts.map((fact, index) => (
-                <div
-                  key={index}
-                  className={`relative mb-4 p-4 rounded-xl border border-black shadow-[4px_4px_0px_black] text-sm font-semibold`}
-                  style={{
-                    backgroundColor: ["#FDE68A", "#D1FAE5", "#FCD5CE"][
-                      index % 3
-                    ],
-                  }}
-                >
-                  <p className="mb-3">{fact.fact}</p>
-                  <button className="bg-white text-black text-xs font-medium px-3 py-1 rounded-xl shadow-[2px_2px_0px_black]">
-                    Add this to your post
-                  </button>
-                  <div className="absolute bottom-2 right-2 text-xl">🧠</div>
-                </div>
-              ))
-            )
-          ) : activeTab === "highlights" ? (
-            highlights.length === 0 ? (
-              <p className="text-sm text-[#999]">
-                No fact-check highlights found.
-              </p>
-            ) : (
-              highlights.map((fact, index) => (
-                <div
-                  key={index}
-                  className="mb-4 text-sm bg-white p-3 rounded-lg border border-[#E7DCD7]"
-                >
-                  <p className="font-semibold mb-1">Claim: “{fact.claim}”</p>
-                  <p>
-                    {fact.verdict === "confirmed"
-                      ? "✅"
-                      : fact.verdict === "incorrect"
-                      ? "❌"
-                      : "⚠️"}{" "}
-                    {fact.explanation}
-                  </p>
-                </div>
-              ))
-            )
-          ) : sources.length === 0 ? (
-            <p className="text-sm text-[#999]">No sources provided.</p>
-          ) : (
-            sources.map((source, index) => (
-              <div
-                key={index}
-                className="mb-4 text-sm bg-white p-3 rounded-lg border border-[#E7DCD7] break-words"
-              >
-                <p className="font-semibold mb-1">{source.title}</p>
-                <p className="mb-1">{source.snippet}</p>
-                <div className="overflow-x-auto">
-                  <a
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#A48CF1] underline break-all"
-                  >
-                    {source.url}
-                  </a>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
 
       {isEditing && (
         <ChatEditor
           onSave={async (newPost) => {
             setPostText(newPost);
-            await fetchDrafts(); // 👈 Refresh draft list after save
+            await fetchDrafts(); // Refresh draft list after save
           }}
         />
       )}

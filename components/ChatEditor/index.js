@@ -17,10 +17,11 @@ export default function ChatEditor({ onSave }) {
   const handleSend = async () => {
     if (!input.trim()) return;
     const sessionId = localStorage.getItem("sessionId");
-    const userMessage = { role: "user", content: input };
-    const thinkingMessage = { role: "assistant", content: "Thinking..." };
 
-    // Append user and placeholder assistant message
+    const userMessage = { role: "user", content: input };
+    const thinkingMessage = { role: "assistant", content: "Thinking...", type: "loading" };
+
+    // Append user input and placeholder
     setChat((prev) => [...prev, userMessage, thinkingMessage]);
     setLoading(true);
 
@@ -36,10 +37,15 @@ export default function ChatEditor({ onSave }) {
 
       const data = await res.json();
 
-      // Replace the "thinking..." message with actual AI content
+      // Replace "Thinking..." with the feedback + changes summary
       setChat((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: "assistant", content: data.post };
+        updated[updated.length - 1] = {
+          role: "assistant",
+          content: data.post,
+          changes: data.changes, // include summary
+          type: "result",
+        };
         return updated;
       });
 
@@ -55,18 +61,18 @@ export default function ChatEditor({ onSave }) {
   return (
     <div className="bg-white border rounded-xl h-[300px] mb-5 flex flex-col overflow-hidden">
       {/* Scrollable chat messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 text-sm">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm">
         {chat.map((msg, i) => (
-          <div
-            key={i}
-            className={`text-${
-              msg.role === "user" ? "right" : "left"
-            } text-[#444]`}
-          >
-            {msg.content === "Thinking..." ? (
-              <span className="inline-block px-3 py-2 italic text-gray-500">
-                Thinking...
-              </span>
+          <div key={i} className={`text-${msg.role === "user" ? "right" : "left"} text-[#444]`}>
+            {msg.type === "loading" ? (
+              <span className="inline-block px-3 py-2 italic text-gray-500">Thinking...</span>
+            ) : msg.type === "result" ? (
+              <div className="bg-[#F0F0F0] rounded-lg p-3 space-y-2 inline-block max-w-[90%]">
+              
+                <div className="font-medium text-[#111] whitespace-pre-line">
+                  ✨ {msg.changes}
+                </div>
+              </div>
             ) : (
               <span className="inline-block px-3 py-2 rounded-lg bg-[#F0F0F0]">
                 {msg.content}
@@ -77,7 +83,7 @@ export default function ChatEditor({ onSave }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Fixed input field */}
+      {/* Input field */}
       <div className="flex gap-2 items-center border-t p-3">
         <input
           value={input}
