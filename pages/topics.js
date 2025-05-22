@@ -31,15 +31,14 @@ useEffect(() => {
   hasInitialized.current = true;
 
   const setupSessionAndTopics = async () => {
+    // 1. Check localStorage first
     let token = localStorage.getItem("token");
     let userId = localStorage.getItem("userId");
 
-    // 1. Try URL if localStorage is missing
+    // 2. If not found, try URL params
     if (!token || !userId) {
       const urlToken = router.query.token;
       const urlUserId = router.query.userId;
-
-      console.log("🚀 From router:", urlUserId, urlToken);
 
       if (urlToken && urlUserId) {
         localStorage.setItem("token", urlToken);
@@ -47,15 +46,14 @@ useEffect(() => {
         token = urlToken;
         userId = urlUserId;
       } else {
-        console.warn("❌ No token or userId found — redirecting");
+        // 3. If nothing is found, block access
         return router.push("/login");
       }
     }
 
     try {
-      const res = await fetch(
-        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3"
-      );
+      // ✅ Fetch topics
+      const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3");
       const data = await res.json();
 
       const transformed = data.map((item) => ({
@@ -67,7 +65,7 @@ useEffect(() => {
       setTopics(transformed);
       setSelectedTopicIndex(0);
 
-      // Session
+      // 🧠 Create user session
       localStorage.removeItem("sessionId");
       let storedSessionId = localStorage.getItem("sessionId");
 
@@ -94,6 +92,7 @@ useEffect(() => {
 
   setupSessionAndTopics();
 }, [router.isReady]);
+
 
 
 
