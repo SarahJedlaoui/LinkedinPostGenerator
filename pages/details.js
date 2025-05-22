@@ -107,34 +107,10 @@ export default function InsightPage() {
       </div>
 
       {/* Learnings */}
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="font-bold text-xl">We’ll learn about</h2>
-          <p className="text-md text-[#6c6c6c]">3 key ideas</p>
-        </div>
-        <div className="space-y-3 text-sm">
-          {loading && keyIdeas.length === 0
-            ? [1, 2, 3].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-4 bg-gray-300 rounded w-3/4 animate-pulse"
-                ></div>
-              ))
-            : keyIdeas.map((idea, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="w-6 h-6 border border-black rounded-full flex items-center justify-center text-xs font-semibold">
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1 border-b border-dashed pb-1">
-                    {idea}
-                  </div>
-                </div>
-              ))}
-        </div>
-
+      <div className="p-6">    
         {/* Expert Quote */}
         {quote && (
-          <div className="mt-8">
+          <div className="mt-1">
             <h2 className="text-xl font-bold mb-2">A Thought from the Field</h2>
             <div className="bg-white p-4 rounded-xl border border-black shadow-[4px_4px_0px_black] flex items-start gap-3">
               <div>

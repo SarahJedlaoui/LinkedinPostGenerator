@@ -26,66 +26,76 @@ export default function TrendingPage() {
     "Good things take time ⏳",
   ];
 
-  //  1. Fetch Topics + Session Setup
-  useEffect(() => {
-    if (!router.isReady || hasInitialized.current) return;
-    hasInitialized.current = true;
+useEffect(() => {
+  if (!router.isReady || hasInitialized.current) return;
+  hasInitialized.current = true;
 
-    const setupSessionAndTopics = async () => {
-      const userId = router.query.user;
-      if (!userId) {
-        console.error("Missing userId in query params");
-        return;
+  const setupSessionAndTopics = async () => {
+    let token = localStorage.getItem("token");
+    let userId = localStorage.getItem("userId");
+
+    // 1. Try URL if localStorage is missing
+    if (!token || !userId) {
+      const urlToken = router.query.token;
+      const urlUserId = router.query.userId;
+
+      console.log("🚀 From router:", urlUserId, urlToken);
+
+      if (urlToken && urlUserId) {
+        localStorage.setItem("token", urlToken);
+        localStorage.setItem("userId", urlUserId);
+        token = urlToken;
+        userId = urlUserId;
+      } else {
+        console.warn("❌ No token or userId found — redirecting");
+        return router.push("/login");
       }
-      const token = router.query.token;
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("userId", userId);
-      }
-      requireAuth();
-      try {
-        // Fetch topics from new V3 route
-        const res = await fetch(
-          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3"
+    }
+
+    try {
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3"
+      );
+      const data = await res.json();
+
+      const transformed = data.map((item) => ({
+        topic: item.topic,
+        questions: item.insights.map((insight) => insight.question),
+        insights: item.insights,
+      }));
+
+      setTopics(transformed);
+      setSelectedTopicIndex(0);
+
+      // Session
+      localStorage.removeItem("sessionId");
+      let storedSessionId = localStorage.getItem("sessionId");
+
+      if (!storedSessionId) {
+        const sessionRes = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+          }
         );
-        const data = await res.json();
-
-        const transformed = data.map((item) => ({
-          topic: item.topic,
-          questions: item.insights.map((insight) => insight.question),
-          insights: item.insights,
-        }));
-
-        setTopics(transformed);
-        setSelectedTopicIndex(0);
-
-        // Reset session
-        localStorage.removeItem("sessionId");
-        let storedId = localStorage.getItem("sessionId");
-
-        if (!storedId) {
-          const sessionRes = await fetch(
-            "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ userId }),
-            }
-          );
-          const sessionData = await sessionRes.json();
-          storedId = sessionData.sessionId;
-          localStorage.setItem("sessionId", storedId);
-        }
-
-        setSessionId(storedId);
-        setUserCount(Math.floor(Math.random() * 3000) + 1000);
-      } catch (err) {
-        console.error("Init error:", err);
+        const sessionData = await sessionRes.json();
+        storedSessionId = sessionData.sessionId;
+        localStorage.setItem("sessionId", storedSessionId);
       }
-    };
 
-    setupSessionAndTopics();
-  }, [router.isReady]); // 👈 Depend on router.isReady
+      setSessionId(storedSessionId);
+      setUserCount(Math.floor(Math.random() * 3000) + 1000);
+    } catch (err) {
+      console.error("Init error:", err);
+    }
+  };
+
+  setupSessionAndTopics();
+}, [router.isReady]);
+
+
 
   // ✅ 2. Handle Start
   const handleStart = async () => {

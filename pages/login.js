@@ -1,12 +1,12 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
 import Link from "next/link";
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function SignupPage() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -27,9 +27,10 @@ export default function SignupPage() {
 
       if (data.success) {
         // ✅ Store token and userId for protected routes
-        localStorage.setItem("token", data.token); // ⚠️ You must send token back in the response now
+        localStorage.setItem("token", data.token); 
         localStorage.setItem("userId", data.userId);
-        router.push(`/topics?user=${data.userId}&token=${data.token}`);
+        router.push(`/topics?userId=${data.userId}`);
+    
       } else {
         alert(data.error || "Login failed");
       }
@@ -64,13 +65,22 @@ export default function SignupPage() {
         onChange={(e) => setEmail(e.target.value)}
         className="w-full px-4 py-3 border rounded-xl mb-4"
       />
+      <div className="relative mb-4">
       <input
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full px-4 py-3 border rounded-xl mb-4"
+        className="w-full px-4 py-3 border rounded-xl pr-12"
       />
+      <button
+        type="button"
+        onClick={() => setShowPassword((prev) => !prev)}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+      >
+        {showPassword ? <FaEyeSlash /> : <FaEye />}
+      </button>
+    </div>
 
       <label className="flex items-center space-x-2 mb-4 text-sm">
         <input type="checkbox" />
@@ -83,10 +93,14 @@ export default function SignupPage() {
       >
         Sign in
       </button>
-
+      <div className="my-4 text-center text-sm text-gray-500">
+        <Link href="/forgot-password" className="text-[#9284EC] underline">
+          Forgot password?
+        </Link>
+      </div>
       <div className="my-6 text-center text-sm text-gray-500">
         Don&lsquo;t have an account?{" "}
-       <Link href="/">
+        <Link href="/signup">
           <span className="text-[#9284EC] underline">Signup</span>
         </Link>
       </div>

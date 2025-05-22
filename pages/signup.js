@@ -1,16 +1,16 @@
 import { FaLinkedin } from "react-icons/fa";
 import { useState } from "react";
 import Link from "next/link";
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignup = async () => {
-    
     if (password !== confirmPassword) return alert("Passwords do not match");
 
     const res = await fetch(
@@ -61,13 +61,22 @@ export default function SignupPage() {
         placeholder="Email"
         className="w-full px-4 py-3 border rounded-xl mb-4"
       />
-      <input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        type="password"
-        placeholder="Password"
-        className="w-full px-4 py-3 border rounded-xl mb-4"
-      />
+      <div className="relative mb-4">
+        <input
+          type={showPassword ? "text" : "password"}
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-3 border rounded-xl pr-12"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((prev) => !prev)}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+        >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
       <input
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
