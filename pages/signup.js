@@ -26,7 +26,7 @@ export default function SignupPage() {
     if (data.success) {
       localStorage.setItem("token", data.token); // ✅ Store JWT
       localStorage.setItem("userId", data.userId); // Optional: store userId
-      window.location.href = "/topics?user=" + data.userId;
+      window.location.href = "/topics?userId=" + data.userId;
     } else {
       alert(data.error || "Signup failed");
     }

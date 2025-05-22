@@ -91,7 +91,7 @@ export default function InsightPage() {
         />
 
         <div className="p-6 pt-10">
-          <Link href="/">
+          <Link href="/topics">
             <span className="text-2xl font-bold">←</span>
           </Link>
           <div className="mb-3 flex justify-center">
