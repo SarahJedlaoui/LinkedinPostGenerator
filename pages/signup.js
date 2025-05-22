@@ -1,5 +1,5 @@
 import { FaLinkedin } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react"; 
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -9,7 +9,9 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
   const handleSignup = async () => {
     if (password !== confirmPassword) return alert("Passwords do not match");
 
