@@ -100,9 +100,7 @@ export default function InsightPage() {
             </button>
           </div>
           <h1 className="text-3xl font-bold leading-snug">{question}</h1>
-          <p className="text-sm text-[#6c6c6c] mt-3 leading-snug">
-            {quickTake}
-          </p>
+         
         </div>
       </div>
 

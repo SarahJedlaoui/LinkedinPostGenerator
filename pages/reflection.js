@@ -114,7 +114,7 @@ export default function ReflectionPage() {
           <div
             className="h-full bg-[#A48CF1] rounded-full"
             style={{
-              width: `${((currentStep + 1) / questions.length) * 95}%`,
+              width: `${((currentStep + 1) / questions.length) * 10}%`,
             }}
           ></div>
         </div>

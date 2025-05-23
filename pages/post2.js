@@ -42,7 +42,6 @@ export default function PostPreview() {
   const [showRating, setShowRating] = useState(false);
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editedPostText, setEditedPostText] = useState("");
-  const [activeToolTab, setActiveToolTab] = useState("chat");
 
   const hasInitialized = useRef(false);
 
@@ -127,11 +126,17 @@ export default function PostPreview() {
 
   const handleFactCheck = () => {
     setFactChecked(true);
+    setShowFacts((prev) => !prev);
   };
 
   const handleRatePost = async () => {
     const sessionId = localStorage.getItem("sessionId");
     if (!sessionId) return;
+
+    if (showRating) {
+      setShowRating(false); // Just toggle off
+      return;
+    }
 
     setRatingLoading(true);
     setRatingFeedback("");
@@ -226,34 +231,35 @@ export default function PostPreview() {
   };
 
   const handleApplyFeedback = async () => {
-    const sessionId = localStorage.getItem("sessionId");
-    if (!sessionId || !ratingFeedback) return;
+  const sessionId = localStorage.getItem("sessionId");
+  if (!sessionId || !ratingFeedback) return;
 
-    try {
-      const res = await fetch(
-        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/apply-feedback",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId,
-            feedback: ratingFeedback,
-          }),
-        }
-      );
-
-      const data = await res.json();
-      if (data.success && data.updatedPost) {
-        setPostText(data.updatedPost);
-        alert("✅ Feedback applied to your post!");
-      } else {
-        alert("❌ Failed to apply feedback.");
+  try {
+    const res = await fetch(
+      "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/apply-feedback",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          feedback: ratingFeedback,
+        }),
       }
-    } catch (err) {
-      console.error("Apply feedback error:", err);
-      alert("Something went wrong.");
+    );
+
+    const data = await res.json();
+    if (data.success && data.updatedPost) {
+      setPostText(data.updatedPost);
+      alert("✅ Feedback applied to your post!");
+    } else {
+      alert("❌ Failed to apply feedback.");
     }
-  };
+  } catch (err) {
+    console.error("Apply feedback error:", err);
+    alert("Something went wrong.");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-[#FAF9F7] flex flex-col justify-between px-4 pt-6 pb-10 max-w-[430px] mx-auto font-sans">
@@ -279,12 +285,27 @@ export default function PostPreview() {
           <div className="h-full bg-[#A48CF1] rounded-full w-[95%]"></div>
         </div>
 
-       
+        {/* Platform Switch */}
+        <div className="flex gap-2 mb-4">
+          {Object.keys(THEMES).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPlatform(p)}
+              className={`text-sm px-4 py-1 rounded-xl transition border font-medium ${
+                platform === p
+                  ? "bg-[#A48CF1] text-white border-[#A48CF1]"
+                  : "border-black text-black"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
 
         {/* Post Card Section */}
-        <div className="overflow-x-auto flex gap-4 pb-4 mb-4 no-scrollbar">
+        <div className="overflow-x-auto flex gap-4 pb-4 mb-4">
           {/* Main Generated Post */}
-          <div className="w-[380px] min-w-[300px] h-[320px] flex flex-col rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]">
+          <div className="w-[350px] min-w-[300px] h-[320px] flex flex-col rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]">
             <div
               className={`${THEMES[platform].bg} rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2 flex justify-between items-center`}
             >
@@ -312,28 +333,30 @@ export default function PostPreview() {
             </div>
 
             <div className="flex items-center px-4 py-2 border-t border-black/10 text-sm">
-              <div className="flex gap-11 text-lg text-black">
+              <div className="flex gap-4 text-lg text-black">
                 <button
-                  onClick={handleCopy}
-                  className="flex text-sm items-center gap-1"
+                  onClick={handleRatePost}
+                  disabled={ratingLoading}
+                  className="text-sm text-[#A48CF1] font-semibold"
                 >
-                  <FiCopy />
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-                <button
-                  onClick={() => router.push("/journey")}
-                  className="text-md text-[#A48CF1] font-semibold"
-                >
-                  Finalize Post
+                  {showRating ? " Hide feedback" : " Rate my post"}
                 </button>
               </div>
 
               <div className="flex gap-4 items-center ml-auto">
                 <button
-                  onClick={handleEditToggle}
-                  className="flex  text-sm items-center gap-1"
+                  onClick={handleCopy}
+                  className="flex items-center gap-1"
                 >
-                  {isInlineEditing ? "Save" : "Edit"}
+                  <FiCopy />
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+
+                <button
+                  onClick={handleEditToggle}
+                  className="text-sm text-[#A48CF1] font-semibold"
+                >
+                  {isInlineEditing ? "Save" : "Edit here"}
                 </button>
               </div>
             </div>
@@ -369,71 +392,67 @@ export default function PostPreview() {
           ))}
         </div>
 
-        <div className="overflow-x-auto whitespace-nowrap border-b border-[#E7DCD7] text-sm mb-3 mt-5 no-scrollbar">
-          <div className="flex gap-6 px-1">
-            {[
-              { key: "chat", label: "💬 Chat" },
-              { key: "rate", label: "✅ Rate" },
-              { key: "highlights", label: "📌 Highlights" },
-              { key: "sources", label: "📄 Sources" },
-            ].map(({ key, label }) => (
+
+        <div className="flex flex-row  sm:flex-row gap-3 mt-4">
+          <button
+            onClick={handleFactCheck}
+            className="text-sm bg-[#A48CF1] text-white px-4 py-2 rounded-xl mb-4 shadow-[2px_2px_0px_black]"
+          >
+            {showFacts ? "🙈 Hide facts" : "🧠 Fact check"}
+          </button>
+          <div className="flex gap-4 text-lg text-black">
+                <button
+                  onClick={handleRatePost}
+                  disabled={ratingLoading}
+                  className="text-sm text-[#A48CF1] font-semibold"
+                >
+                  {showRating ? " Hide feedback" : " Rate my post"}
+                </button>
+              </div>
+        </div>
+        {!isEditing && factChecked && showFacts && (
+          <div>
+            {/* Tabs */}
+            <div className="flex gap-6 border-b border-[#E7DCD7] text-sm mb-3">
               <button
-                key={key}
-                onClick={() => {
-                  setActiveToolTab(key);
-                  if (key === "rate") handleRatePost();
-                  if (["facts", "highlights", "sources"].includes(key))
-                    handleFactCheck();
-                }}
-                className={`pb-1 whitespace-nowrap ${
-                  activeToolTab === key
+                onClick={() => setActiveTab("facts")}
+                className={`pb-1 ${
+                  activeTab === "facts"
                     ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
                     : ""
                 }`}
               >
-                {label}
+                🧠 Facts
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tab Content */}
-        <div className="mt-2">
-          {activeToolTab === "chat" && (
-            <ChatEditor
-              onSave={async (newPost) => {
-                setPostText(newPost);
-                await fetchDrafts();
-              }}
-            />
-          )}
-
-          {activeToolTab === "rate" && showRating && (
-            <div className="bg-white border border-black rounded-xl p-4 text-sm shadow-[4px_4px_0px_black]">
-              <p className="font-semibold mb-2">AI Feedback:</p>
-              {ratingLoading ? (
-                <p className="italic text-[#999]">Analyzing your post...</p>
-              ) : (
-                <>
-                  <p className="mb-3">{ratingFeedback}</p>
-                  <button
-                    onClick={handleApplyFeedback}
-                    className="bg-[#A48CF1] text-white px-4 py-2 rounded-lg shadow-[2px_2px_0px_black] text-xs font-semibold"
-                  >
-                    Apply Changes
-                  </button>
-                </>
-              )}
+              <button
+                onClick={() => setActiveTab("highlights")}
+                className={`pb-1 ${
+                  activeTab === "highlights"
+                    ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
+                    : ""
+                }`}
+              >
+                ✅ Highlights
+              </button>
+              <button
+                onClick={() => setActiveTab("sources")}
+                className={`pb-1 ${
+                  activeTab === "sources"
+                    ? "text-[#A48CF1] border-b-2 border-[#A48CF1]"
+                    : ""
+                }`}
+              >
+                📄 Sources
+              </button>
             </div>
-          )}
 
-          {activeToolTab === "facts" && factChecked && showFacts && (
-            <div className="mt-2">
-              {loadingFacts ? (
-                <p className="text-sm text-[#999]">
-                  Loading fact-check results...
-                </p>
-              ) : facts.length === 0 ? (
+            {/* Tab Content */}
+            {loadingFacts ? (
+              <p className="text-sm text-[#999]">
+                Loading fact-check results...
+              </p>
+            ) : activeTab === "facts" ? (
+              facts.length === 0 ? (
                 <p className="text-sm text-[#999]">No facts available.</p>
               ) : (
                 facts.map((fact, index) => (
@@ -453,13 +472,9 @@ export default function PostPreview() {
                     <div className="absolute bottom-2 right-2 text-xl">🧠</div>
                   </div>
                 ))
-              )}
-            </div>
-          )}
-
-          {activeToolTab === "highlights" && (
-            <div className="mt-2">
-              {highlights.length === 0 ? (
+              )
+            ) : activeTab === "highlights" ? (
+              highlights.length === 0 ? (
                 <p className="text-sm text-[#999]">
                   No fact-check highlights found.
                 </p>
@@ -480,39 +495,78 @@ export default function PostPreview() {
                     </p>
                   </div>
                 ))
-              )}
-            </div>
-          )}
-
-          {activeToolTab === "sources" && (
-            <div className="mt-2">
-              {sources.length === 0 ? (
-                <p className="text-sm text-[#999]">No sources provided.</p>
-              ) : (
-                sources.map((source, index) => (
-                  <div
-                    key={index}
-                    className="mb-4 text-sm bg-white p-3 rounded-lg border border-[#E7DCD7] break-words"
-                  >
-                    <p className="font-semibold mb-1">{source.title}</p>
-                    <p className="mb-1">{source.snippet}</p>
-                    <div className="overflow-x-auto">
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#A48CF1] underline break-all"
-                      >
-                        {source.url}
-                      </a>
-                    </div>
+              )
+            ) : sources.length === 0 ? (
+              <p className="text-sm text-[#999]">No sources provided.</p>
+            ) : (
+              sources.map((source, index) => (
+                <div
+                  key={index}
+                  className="mb-4 text-sm bg-white p-3 rounded-lg border border-[#E7DCD7] break-words"
+                >
+                  <p className="font-semibold mb-1">{source.title}</p>
+                  <p className="mb-1">{source.snippet}</p>
+                  <div className="overflow-x-auto">
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#A48CF1] underline break-all"
+                    >
+                      {source.url}
+                    </a>
                   </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+        {showRating && (
+          <div className="bg-white border border-black rounded-xl p-4 text-sm mt-2 mb-5 shadow-[4px_4px_0px_black]">
+            <p className="font-semibold mb-2">AI Feedback:</p>
+            {ratingLoading ? (
+              <p className="italic text-[#999]">Analyzing your post...</p>
+            ) : (
+               <>
+        <p className="mb-3">{ratingFeedback}</p>
+        <button
+          onClick={handleApplyFeedback}
+          className="bg-[#A48CF1] text-white px-4 py-2 rounded-lg shadow-[2px_2px_0px_black] text-xs font-semibold"
+        >
+          Apply Changes
+        </button>
+      </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {isEditing && (
+        <ChatEditor
+          onSave={async (newPost) => {
+            setPostText(newPost);
+            await fetchDrafts(); // Refresh draft list after save
+          }}
+        />
+      )}
+      {/* Bottom buttons */}
+      <div className="flex justify-between items-center gap-4 px-2">
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          className="text-[#A48CF1] font-semibold"
+        >
+          {isEditing ? "Close Editor" : "Edit post"}
+        </button>
+
+        <button
+          onClick={() => router.push("/journey")}
+          className="bg-[#A48CF1] text-white font-semibold px-6 py-3 rounded-xl shadow-[4px_4px_0px_black]"
+        >
+          Finalize Post
+        </button>
       </div>
     </div>
   );
 }
+
+
