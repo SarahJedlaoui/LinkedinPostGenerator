@@ -12,7 +12,6 @@ export default function InsightPage() {
   const [insight, setInsight] = useState(null);
 
   useEffect(() => {
-    requireAuth();
     const fetchData = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) {

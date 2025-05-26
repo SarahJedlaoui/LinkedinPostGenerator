@@ -1,5 +1,5 @@
 import { FaLinkedin } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -7,7 +7,10 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+// ✅ Clear localStorage on first load
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
   const handleLogin = async () => {
     if (!email || !password) {
       return alert("Please enter both email and password.");

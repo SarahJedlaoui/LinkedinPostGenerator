@@ -1,121 +1,246 @@
-import { FaLinkedin } from "react-icons/fa";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { EffectCoverflow } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-coverflow";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { requireAuth } from "../utils/requireAuth";
 
-export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-// ✅ Clear localStorage on first load
-  useEffect(() => {
-    localStorage.clear();
-  }, []);
-  const handleLogin = async () => {
-    if (!email || !password) {
-      return alert("Please enter both email and password.");
-    }
+export default function TrendingPage() {
+  const router = useRouter();
+  const [topics, setTopics] = useState([]);
+  const [selectedTopicIndex, setSelectedTopicIndex] = useState(0);
+  const [userCount, setUserCount] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const pastelColors = ["#D6EAF8", "#FADBD8", "#FCF3CF", "#D5F5E3"];
+  const [loading, setLoading] = useState(false);
+  const hasInitialized = useRef(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const loadingMessages = [
+    "Collecting information...",
+    "Thanks for your patience!",
+    "Almost there — promise 🤞",
+    "Good things take time ⏳",
+  ];
+
+useEffect(() => {
+  if (!router.isReady || hasInitialized.current) return;
+  hasInitialized.current = true;
+
+  const setupSessionAndTopics = async () => {
+   
+    
 
     try {
-      const res = await fetch(
-        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/login",
+      // ✅ Fetch topics
+      const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3");
+      const data = await res.json();
+
+      const transformed = data.map((item) => ({
+        topic: item.topic,
+        questions: item.insights.map((insight) => insight.question),
+        insights: item.insights,
+      }));
+
+      setTopics(transformed);
+      setSelectedTopicIndex(0);
+
+      // 🧠 Create user session
+      localStorage.removeItem("sessionId");
+      let storedSessionId = localStorage.getItem("sessionId");
+
+      if (!storedSessionId) {
+        const sessionRes = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/session",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            
+          }
+        );
+        const sessionData = await sessionRes.json();
+        storedSessionId = sessionData.sessionId;
+        localStorage.setItem("sessionId", storedSessionId);
+      }
+
+      setSessionId(storedSessionId);
+      setUserCount(Math.floor(Math.random() * 3000) + 1000);
+    } catch (err) {
+      console.error("Init error:", err);
+    }
+  };
+
+  setupSessionAndTopics();
+}, [router.isReady]);
+
+
+
+
+  // ✅ 2. Handle Start
+  const handleStart = async () => {
+    if (!topics[selectedTopicIndex] || !sessionId) return;
+
+    const topic = topics[selectedTopicIndex].topic;
+    const question = topics[selectedTopicIndex].questions[currentQuestionIndex];
+
+    setLoading(true);
+
+    try {
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/topic",
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ sessionId, topic }),
         }
       );
 
-      const data = await res.json();
+      await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/question",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, question }),
+        }
+      );
 
-      if (data.success) {
-        // ✅ Store token and userId for protected routes
-        localStorage.setItem("token", data.token); 
-        localStorage.setItem("userId", data.userId);
-        router.push(`/topics?userId=${data.userId}`);
-    
-      } else {
-        alert(data.error || "Login failed");
-      }
+      // ❌ Removed insights generation — now comes preloaded from backend
+
+      router.push("/details");
     } catch (err) {
-      console.error("Login error:", err);
-      alert("Something went wrong. Try again.");
+      console.error("Failed to save:", err);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLinkedInLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_LINKEDIN_REDIRECT_URI;
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+    }, 5000);
 
-    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&scope=openid%20profile%20email%20w_member_social`;
-
-    window.location.href = authUrl;
-  };
+    return () => clearInterval(interval);
+  }, [loading]);
 
   return (
-    <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-center px-6 py-12 font-sans">
-      <h1 className="text-3xl font-bold mb-2">Hello there 👋</h1>
-      <p className="text-sm text-gray-600 mb-6">
-        Please enter your email & password to login.
-      </p>
+    <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-between px-5 py-8 font-sans">
+      {/* Top + Scrollable Content */}
+      <div className="flex flex-col justify-start mt-5">
+        <h1 className="text-2xl font-bold text-[#222] mb-1">
+          Choose your Content Quest for today
+        </h1>
+        <p className="text-sm text-[#6c6c6c] mb-3">
+          Progress unlocked: You&apos;re in the game.
+        </p>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full px-4 py-3 border rounded-xl mb-4"
-      />
-      <div className="relative mb-4">
-      <input
-        type={showPassword ? "text" : "password"}
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full px-4 py-3 border rounded-xl pr-12"
-      />
+        <div className="h-2 w-full bg-[#EAE7DE] rounded-full mb-4">
+          <div className="h-full bg-[#A48CF1] rounded-full w-[25%]"></div>
+        </div>
+
+        <div className="flex overflow-x-auto gap-2 mb-4 whitespace-nowrap no-scrollbar">
+          {topics.map((t, i) => (
+            <button
+              key={i}
+              className={`px-4 py-1.5 text-sm rounded-xl transition-all ${
+                selectedTopicIndex === i
+                  ? "bg-[#A48CF1] text-white"
+                  : "border border-black text-black"
+              }`}
+              onClick={() => setSelectedTopicIndex(i)}
+            >
+              {t.topic}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h2 className="text-3xl font-semibold text-center font-medium ">
+          Today’s Question
+        </h2>
+      </div>
+
+      <div>
+        {topics[selectedTopicIndex]?.questions && (
+          <div className="mb-6">
+            <Swiper
+              modules={[EffectCoverflow]}
+              effect="coverflow"
+              grabCursor={true}
+              centeredSlides={true}
+              slidesPerView={1.2}
+              spaceBetween={-40}
+              onSlideChange={(swiper) =>
+                setCurrentQuestionIndex(swiper.realIndex)
+              }
+              coverflowEffect={{
+                rotate: 0,
+                stretch: 0,
+                depth: 150,
+                modifier: 1.5,
+                slideShadows: false,
+              }}
+              className="h-[360px]"
+            >
+              {topics[selectedTopicIndex].questions.map((question, index) => (
+                <SwiperSlide key={index}>
+                  <div
+                    className="w-[280px] h-[320px] mx-auto rounded-xl border border-black shadow-[4px_4px_0px_black] relative flex flex-col items-center justify-center p-6 text-center text-lg font-semibold"
+                    style={{
+                      backgroundColor:
+                        pastelColors[index % pastelColors.length],
+                    }}
+                  >
+                    <div className="text-sm text-[#444] mb-2">
+                      {topics[selectedTopicIndex].topic}
+                    </div>
+                    <span className="z-10">{question}</span>
+                    <Image
+                      src="/images/!.svg"
+                      alt="question icon"
+                      className="absolute bottom-4 right-4"
+                      width={96}
+                      height={96}
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        )}
+
+        {userCount && (
+          <div className="text-center text-3xl text-[#222] font-medium mb-6">
+            {userCount.toLocaleString()} users are working on this today
+          </div>
+        )}
+      </div>
+
+      {/* Bottom button */}
       <button
-        type="button"
-        onClick={() => setShowPassword((prev) => !prev)}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+        disabled={loading}
+        onClick={handleStart}
+        className={`w-full py-4 text-white text-lg font-semibold rounded-xl shadow-[4px_4px_0px_black] transition-all ${
+          loading ? "bg-[#A48CF1]/70" : "bg-[#A48CF1]"
+        }`}
       >
-        {showPassword ? <FaEyeSlash /> : <FaEye />}
+        {loading ? (
+          <div className="flex justify-center items-center gap-2">
+            <span>{loadingMessages[messageIndex]}</span>
+            <div className="bouncing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        ) : (
+          "Start Challenge"
+        )}
       </button>
-    </div>
-
-      <label className="flex items-center space-x-2 mb-4 text-sm">
-        <input type="checkbox" />
-        <span>I agree to Terms & Privacy Policy.</span>
-      </label>
-
-      <button
-        onClick={handleLogin}
-        className="w-full py-3 bg-[#9284EC] text-white font-semibold rounded-xl shadow-[2px_2px_0px_black]"
-      >
-        Sign in
-      </button>
-      <div className="my-4 text-center text-sm text-gray-500">
-        <Link href="/forgot-password" className="text-[#9284EC] underline">
-          Forgot password?
-        </Link>
-      </div>
-      <div className="my-6 text-center text-sm text-gray-500">
-        Don&lsquo;t have an account?{" "}
-        <Link href="/signup">
-          <span className="text-[#9284EC] underline">Signup</span>
-        </Link>
-      </div>
-
-      <div className="mt-4">
-        <button
-          onClick={handleLinkedInLogin}
-          className="w-full py-3 border border-[#0077B5] text-[#0077B5] font-semibold rounded-xl flex items-center justify-center gap-2"
-        >
-          <FaLinkedin /> Sign in with LinkedIn
-        </button>
-      </div>
     </div>
   );
 }
