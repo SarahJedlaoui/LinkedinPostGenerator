@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
+import { useTokenSync } from "../utils/auth";
 import Link from "next/link";
 
 export default function ReflectionPage() {
@@ -15,6 +15,7 @@ export default function ReflectionPage() {
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
+    useTokenSync();
     const loadInitialQuestion = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) return;

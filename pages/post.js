@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
-
+import { useTokenSync } from "../utils/auth";
 import { FiThumbsUp, FiThumbsDown, FiCopy } from "react-icons/fi";
 import { FaLinkedinIn, FaInstagram, FaTiktok } from "react-icons/fa";
 import ChatEditor from "../components/ChatEditor";
@@ -65,6 +65,7 @@ export default function PostPreview() {
   };
 
   useEffect(() => {
+    useTokenSync();
     if (hasInitialized.current) return;
     hasInitialized.current = true;
 

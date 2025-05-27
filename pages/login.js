@@ -16,14 +16,14 @@ export default function SignupPage() {
     if (!email || !password) {
       return alert("Please enter both email and password.");
     }
-
+   const sessionId = localStorage.getItem("sessionId");
     try {
       const res = await fetch(
         "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password,sessionId  }),
         }
       );
 

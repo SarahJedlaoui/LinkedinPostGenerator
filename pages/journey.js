@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTokenSync } from "../utils/auth";
 export default function RewardScreen() {
   const [postText, setPostText] = useState("");
 
   useEffect(() => {
+    useTokenSync();
     const fetchLatestPost = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) return;

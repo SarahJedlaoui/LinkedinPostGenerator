@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { requireAuth } from "../utils/requireAuth";
+import { useTokenSync } from "../utils/auth";
+
 
 
 export default function InsightPage() {
@@ -11,7 +12,9 @@ export default function InsightPage() {
   const [session, setSession] = useState(null);
   const [insight, setInsight] = useState(null);
 
+
   useEffect(() => {
+    useTokenSync();
     const fetchData = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) {
