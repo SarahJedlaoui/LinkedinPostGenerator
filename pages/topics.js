@@ -147,7 +147,7 @@ useEffect(() => {
   return (
     <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-between px-5 py-8 font-sans">
       {/* Top + Scrollable Content */}
-      <div className="flex flex-col justify-start mt-5">
+      <div className="flex flex-col justify-start ">
         <h1 className="text-2xl font-bold text-[#222] mb-1">
           Choose your Content Quest for today
         </h1>

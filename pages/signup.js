@@ -2,6 +2,7 @@ import { FaLinkedin } from "react-icons/fa";
 import { useEffect, useState } from "react"; 
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -9,9 +10,10 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  useEffect(() => {
-    localStorage.clear();
-  }, []);
+  const router = useRouter();
+  const returnTo = router.query.returnTo || "/topics";
+
+ 
   const handleSignup = async () => {
     if (password !== confirmPassword) return alert("Passwords do not match");
 
@@ -28,7 +30,7 @@ export default function SignupPage() {
     if (data.success) {
       localStorage.setItem("token", data.token); // ✅ Store JWT
       localStorage.setItem("userId", data.userId); // Optional: store userId
-      window.location.href = "/topics?userId=" + data.userId;
+      router.push(`${returnTo}?userId=${data.userId}`);
     } else {
       alert(data.error || "Signup failed");
     }
