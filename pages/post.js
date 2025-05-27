@@ -63,9 +63,9 @@ export default function PostPreview() {
     const data = await res.json();
     setDrafts(data.drafts || []);
   };
-
+ useTokenSync();
   useEffect(() => {
-    useTokenSync();
+   
     if (hasInitialized.current) return;
     hasInitialized.current = true;
 

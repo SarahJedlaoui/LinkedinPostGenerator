@@ -13,9 +13,9 @@ export default function ReflectionPage() {
   const [loading, setLoading] = useState(false);
   const [mainQuestion, setMainQuestion] = useState("");
   const [generating, setGenerating] = useState(false);
-
+ useTokenSync();
   useEffect(() => {
-    useTokenSync();
+   
     const loadInitialQuestion = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) return;

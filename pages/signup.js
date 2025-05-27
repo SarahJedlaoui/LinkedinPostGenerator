@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const returnTo = router.query.returnTo || "/topics";
+  const returnTo = router.query.returnTo || "/";
 
  
   const handleSignup = async () => {

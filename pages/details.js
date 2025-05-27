@@ -12,9 +12,9 @@ export default function InsightPage() {
   const [session, setSession] = useState(null);
   const [insight, setInsight] = useState(null);
 
-
+ useTokenSync();
   useEffect(() => {
-    useTokenSync();
+   
     const fetchData = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) {
@@ -64,7 +64,7 @@ export default function InsightPage() {
         setLoading(false);
       }
     };
-
+   
     fetchData();
   }, []);
 

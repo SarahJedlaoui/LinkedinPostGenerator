@@ -4,9 +4,8 @@ import Link from "next/link";
 import { useTokenSync } from "../utils/auth";
 export default function RewardScreen() {
   const [postText, setPostText] = useState("");
-
+  useTokenSync();
   useEffect(() => {
-    useTokenSync();
     const fetchLatestPost = async () => {
       const sessionId = localStorage.getItem("sessionId");
       if (!sessionId) return;
@@ -56,7 +55,7 @@ export default function RewardScreen() {
   return (
     <div className="min-h-screen bg-[#FAF9F7] flex flex-col items-center px-4 pt-6 pb-10 max-w-[430px] mx-auto font-sans">
       {/* Back and title */}
-      
+
       <div className="w-full flex justify-start mt-5">
         <Link href="/reflection">
           <span className="text-2xl font-light">←</span>
