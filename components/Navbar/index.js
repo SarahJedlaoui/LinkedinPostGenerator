@@ -41,7 +41,7 @@ export default function Navbar() {
 
   return (
     <div className="max-w-[430px] mx-auto bg-[#FAF9F7] shadow-sm">
-      <div className="max-w-[430px] mx-auto px-4 pt-6 flex items-center justify-between font-sans">
+      <div className="max-w-[430px] mx-auto px-4 pt-6 pb-2 flex items-center justify-between font-sans">
         <Link href="/" className="flex items-center">
           <Image
             src="/images/sophia-logo.svg"
