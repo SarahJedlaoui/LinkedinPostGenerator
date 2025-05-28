@@ -43,6 +43,8 @@ export default function PostPreview() {
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editedPostText, setEditedPostText] = useState("");
   const [activeToolTab, setActiveToolTab] = useState("chat");
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
 
   const hasInitialized = useRef(false);
 
@@ -63,9 +65,8 @@ export default function PostPreview() {
     const data = await res.json();
     setDrafts(data.drafts || []);
   };
- useTokenSync();
+  useTokenSync();
   useEffect(() => {
-   
     if (hasInitialized.current) return;
     hasInitialized.current = true;
 
@@ -256,6 +257,32 @@ export default function PostPreview() {
     }
   };
 
+  const handleGenerateImage = async () => {
+    setImageLoading(true);
+    try {
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/generate-image",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post: postText }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.image) {
+        setGeneratedImage(`data:image/png;base64,${data.image}`);
+      } else {
+        alert("No image returned.");
+      }
+    } catch (err) {
+      console.error("Image generation failed:", err);
+      alert("Something went wrong generating the image.");
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F7] flex flex-col justify-between px-4 pt-6 pb-10 max-w-[430px] mx-auto font-sans">
       <Head>
@@ -279,8 +306,6 @@ export default function PostPreview() {
         <div className="w-full h-2 bg-[#EFECE4] rounded-full mb-5">
           <div className="h-full bg-[#A48CF1] rounded-full w-[95%]"></div>
         </div>
-
-       
 
         {/* Post Card Section */}
         <div className="overflow-x-auto flex gap-4 pb-4 mb-4 no-scrollbar">
@@ -308,7 +333,37 @@ export default function PostPreview() {
                   className="w-full h-full text-sm text-[#333] border border-[#ddd] rounded-lg p-2 resize-none"
                 />
               ) : (
-                <div className="min-h-[200px]">{postText}</div>
+                <>
+                  <div className="min-h-[200px]">{postText}</div>
+                  <div className="mt-2 ">
+                    <button
+                      onClick={handleGenerateImage}
+                      className="text-[#A48CF1] text-sm font-semibold"
+                      disabled={imageLoading}
+                    >
+                      {imageLoading
+                        ? "Generating image..."
+                        : "🖼️ Generate Image"}
+                    </button>
+
+                    {generatedImage && (
+                      <div className="mt-4">
+                        <img
+                          src={generatedImage}
+                          alt="Generated Visual"
+                          className="w-full rounded-xl border shadow-lg"
+                        />
+                        <a
+                          href={generatedImage}
+                          download="generated-image.png"
+                          className="mt-4 text-[#A48CF1] text-sm font-semibold hover:text-blue-700 transition"
+                        >
+                          Download Image
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
