@@ -105,7 +105,7 @@ export default function ReflectionPage() {
           <Link href="/details">
             <span className="text-2xl font-bold">←</span>
           </Link>
-          <h1 className="text-2xl font-bold">Share Your Thoughts</h1>
+          <h1 className="text-xl font-bold">Share Your Thoughts</h1>
         </div>
 
         <p className="text-sm text-[#6c6c6c]">

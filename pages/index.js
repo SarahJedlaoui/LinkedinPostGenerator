@@ -36,7 +36,7 @@ useEffect(() => {
       // ✅ Fetch topics
       const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3");
       const data = await res.json();
-
+      console.log('topics', data)
       const transformed = data.map((item) => ({
         topic: item.topic,
         questions: item.insights.map((insight) => insight.question),

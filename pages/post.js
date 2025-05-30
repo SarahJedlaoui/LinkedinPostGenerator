@@ -45,7 +45,8 @@ export default function PostPreview() {
   const [activeToolTab, setActiveToolTab] = useState("chat");
   const [generatedImage, setGeneratedImage] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
-
+  const [generatedImages, setGeneratedImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
   const hasInitialized = useRef(false);
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export default function PostPreview() {
     setDrafts(data.drafts || []);
   };
   useTokenSync();
+
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -95,30 +97,53 @@ export default function PostPreview() {
       }
     };
 
-    const fetchFactCheck = async () => {
-      try {
-        const fcRes = await fetch(
-          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/fact-check",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId }),
-          }
-        );
+    const fetchFactCheckWithRetryUntilReady = async () => {
+      const maxAttempts = 8;
+      const delay = 1500;
+      let attempt = 0;
 
-        const fc = await fcRes.json();
-        setHighlights(fc.highlights || []);
-        setSources(fc.sources || []);
-        setFacts(fc.facts || []);
-      } catch (err) {
-        console.error("Fact-check failed:", err);
-      } finally {
-        setLoadingFacts(false); // ✅ Done silently
+      while (attempt < maxAttempts) {
+        try {
+          const res = await fetch(
+            "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/fact-check",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId }),
+            }
+          );
+
+          if (res.status === 404) {
+            // Backend not ready yet
+            attempt++;
+            await new Promise((r) => setTimeout(r, delay));
+            continue;
+          }
+
+          const fc = await res.json();
+
+          // Only exit if facts are present
+          if ((fc?.facts || []).length > 0 || attempt >= maxAttempts - 1) {
+            setHighlights(fc.highlights || []);
+            setSources(fc.sources || []);
+            setFacts(fc.facts || []);
+            break;
+          }
+
+          attempt++;
+          await new Promise((r) => setTimeout(r, delay));
+        } catch (err) {
+          console.warn(`Fact-check attempt ${attempt + 1} failed`);
+          attempt++;
+          await new Promise((r) => setTimeout(r, delay));
+        }
       }
+
+      setLoadingFacts(false);
     };
 
-    fetchPost(); // starts post generation
-    fetchFactCheck(); // runs fact-check in background
+    fetchPost();
+    fetchFactCheckWithRetryUntilReady();
   }, []);
 
   const handleCopy = () => {
@@ -283,6 +308,26 @@ export default function PostPreview() {
     }
   };
 
+  const handleGenerateImages = async () => {
+    setLoadingImages(true);
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/images/generate-social-images",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post: postText }),
+        }
+      );
+      const data = await res.json();
+      setGeneratedImages(data.images || []);
+    } catch (err) {
+      console.error("Image generation failed:", err);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F7] flex flex-col justify-between px-4 pt-6 pb-10 max-w-[430px] mx-auto font-sans">
       <Head>
@@ -337,29 +382,34 @@ export default function PostPreview() {
                   <div className="min-h-[200px]">{postText}</div>
                   <div className="mt-2 ">
                     <button
-                      onClick={handleGenerateImage}
-                      className="text-[#A48CF1] text-sm font-semibold"
-                      disabled={imageLoading}
+                      onClick={handleGenerateImages}
+                      disabled={loadingImages}
+                      className="mt-4 text-[#A48CF1] font-semibold  text-sm"
                     >
-                      {imageLoading
-                        ? "Generating image..."
-                        : "🖼️ Generate Image"}
+                      {loadingImages
+                        ? "Generating images..."
+                        : "✨ Generate Post Images"}
                     </button>
-
-                    {generatedImage && (
-                      <div className="mt-4">
-                        <img
-                          src={generatedImage}
-                          alt="Generated Visual"
-                          className="w-full rounded-xl border shadow-lg"
-                        />
-                        <a
-                          href={generatedImage}
-                          download="generated-image.png"
-                          className="mt-4 text-[#A48CF1] text-sm font-semibold hover:text-blue-700 transition"
-                        >
-                          Download Image
-                        </a>
+                    {generatedImages.length > 0 && (
+                      <div className="mt-6 overflow-x-auto no-scrollbar">
+                        <div className="flex space-x-4">
+                          {generatedImages.map((img, index) => (
+                            <div key={index} className="shrink-0 w-[200px]">
+                              <img
+                                src={img}
+                                alt={`Generated ${index}`}
+                                className="rounded-xl shadow w-full"
+                              />
+                              <a
+                                href={img}
+                                download={`sophia-image-${index + 1}.png`}
+                                className="inline-block mt-2 text-xs bg-[#A48CF1] text-white px-2 py-1 rounded shadow"
+                              >
+                                Download Image {index + 1}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -483,39 +533,11 @@ export default function PostPreview() {
             </div>
           )}
 
-          {activeToolTab === "facts" && factChecked && showFacts && (
-            <div className="mt-2">
-              {loadingFacts ? (
-                <p className="text-sm text-[#999]">
-                  Loading fact-check results...
-                </p>
-              ) : facts.length === 0 ? (
-                <p className="text-sm text-[#999]">No facts available.</p>
-              ) : (
-                facts.map((fact, index) => (
-                  <div
-                    key={index}
-                    className={`relative mb-4 p-4 rounded-xl border border-black shadow-[4px_4px_0px_black] text-sm font-semibold`}
-                    style={{
-                      backgroundColor: ["#FDE68A", "#D1FAE5", "#FCD5CE"][
-                        index % 3
-                      ],
-                    }}
-                  >
-                    <p className="mb-3">{fact.fact}</p>
-                    <button className="bg-white text-black text-xs font-medium px-3 py-1 rounded-xl shadow-[2px_2px_0px_black]">
-                      Add this to your post
-                    </button>
-                    <div className="absolute bottom-2 right-2 text-xl">🧠</div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
           {activeToolTab === "highlights" && (
             <div className="mt-2">
-              {highlights.length === 0 ? (
+              {loadingFacts ? (
+                <p className="text-sm text-[#999]">Loading highlights...</p>
+              ) : highlights.length === 0 ? (
                 <p className="text-sm text-[#999]">
                   No fact-check highlights found.
                 </p>
@@ -542,7 +564,9 @@ export default function PostPreview() {
 
           {activeToolTab === "sources" && (
             <div className="mt-2">
-              {sources.length === 0 ? (
+              {loadingFacts ? (
+                <p className="text-sm text-[#999]">Loading sources...</p>
+              ) : sources.length === 0 ? (
                 <p className="text-sm text-[#999]">No sources provided.</p>
               ) : (
                 sources.map((source, index) => (
