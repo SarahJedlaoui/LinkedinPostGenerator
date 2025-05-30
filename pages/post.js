@@ -142,8 +142,11 @@ export default function PostPreview() {
       setLoadingFacts(false);
     };
 
-    fetchPost();
-    fetchFactCheckWithRetryUntilReady();
+    // ✅ Sequential: wait for post before running fact-check
+    (async () => {
+      await fetchPost();
+      await fetchFactCheckWithRetryUntilReady();
+    })();
   }, []);
 
   const handleCopy = () => {
