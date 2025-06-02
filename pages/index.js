@@ -252,7 +252,7 @@ export default function TrendingPage() {
         )}
       </div>
 
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[430px] bg-white rounded-xl shadow-md px-4 py-3 flex items-center justify-between border border-gray-200 z-9999">
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[430px] bg-white rounded-xl shadow-md px-4 py-3 flex items-center justify-between border border-gray-200 z-50">
         <input
           type="text"
           value={userInput}
