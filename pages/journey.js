@@ -53,16 +53,16 @@ export default function RewardScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F7] flex flex-col items-center px-4 pt-6 pb-10 max-w-[430px] mx-auto font-sans">
+    <div className="min-h-[93vh] bg-[#FAF9F7] flex flex-col items-center px-4 pt-6 max-w-[430px] mx-auto font-sans">
       {/* Back and title */}
 
-      <div className="w-full flex justify-start mt-5">
+      <div className="w-full flex justify-start">
         <Link href="/reflection">
           <span className="text-2xl font-light">←</span>
         </Link>
       </div>
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-black mb-8 mt-20">
+        <h1 className="text-3xl font-bold text-black mb-8 mt-10">
           Challenge complete!
         </h1>
 
