@@ -9,6 +9,8 @@ import "swiper/css/effect-coverflow";
 export default function TrendingPage() {
   const router = useRouter();
   const [topics, setTopics] = useState([]);
+  const [loadingCustomInput, setLoadingCustomInput] = useState(false);
+  const [userInput, setUserInput] = useState("");
   const [selectedTopicIndex, setSelectedTopicIndex] = useState(0);
   const [userCount, setUserCount] = useState(null);
   const [sessionId, setSessionId] = useState(null);
@@ -24,58 +26,53 @@ export default function TrendingPage() {
     "Good things take time ⏳",
   ];
 
-useEffect(() => {
-  if (!router.isReady || hasInitialized.current) return;
-  hasInitialized.current = true;
+  useEffect(() => {
+    if (!router.isReady || hasInitialized.current) return;
+    hasInitialized.current = true;
 
-  const setupSessionAndTopics = async () => {
-   
-    
-
-    try {
-      // ✅ Fetch topics
-      const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3");
-      const data = await res.json();
-      console.log('topics', data)
-      const transformed = data.map((item) => ({
-        topic: item.topic,
-        questions: item.insights.map((insight) => insight.question),
-        insights: item.insights,
-      }));
-
-      setTopics(transformed);
-      setSelectedTopicIndex(0);
-
-      // 🧠 Create user session
-      localStorage.removeItem("sessionId");
-      let storedSessionId = localStorage.getItem("sessionId");
-
-      if (!storedSessionId) {
-        const sessionRes = await fetch(
-          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/session",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            
-          }
+    const setupSessionAndTopics = async () => {
+      try {
+        // ✅ Fetch topics
+        const res = await fetch(
+          "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/topicsV3"
         );
-        const sessionData = await sessionRes.json();
-        storedSessionId = sessionData.sessionId;
-        localStorage.setItem("sessionId", storedSessionId);
+        const data = await res.json();
+        console.log("topics", data);
+        const transformed = data.map((item) => ({
+          topic: item.topic,
+          questions: item.insights.map((insight) => insight.question),
+          insights: item.insights,
+        }));
+
+        setTopics(transformed);
+        setSelectedTopicIndex(0);
+
+        // 🧠 Create user session
+        localStorage.removeItem("sessionId");
+        let storedSessionId = localStorage.getItem("sessionId");
+
+        if (!storedSessionId) {
+          const sessionRes = await fetch(
+            "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/session",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+          const sessionData = await sessionRes.json();
+          storedSessionId = sessionData.sessionId;
+          localStorage.setItem("sessionId", storedSessionId);
+        }
+
+        setSessionId(storedSessionId);
+        setUserCount(Math.floor(Math.random() * 3000) + 1000);
+      } catch (err) {
+        console.error("Init error:", err);
       }
+    };
 
-      setSessionId(storedSessionId);
-      setUserCount(Math.floor(Math.random() * 3000) + 1000);
-    } catch (err) {
-      console.error("Init error:", err);
-    }
-  };
-
-  setupSessionAndTopics();
-}, [router.isReady]);
-
-
-
+    setupSessionAndTopics();
+  }, [router.isReady]);
 
   // ✅ 2. Handle Start
   const handleStart = async () => {
@@ -125,8 +122,33 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [loading]);
 
+  const handleCustomTopicSubmit = async () => {
+    const input = userInput.trim();
+    if (!input) return;
+
+    try {
+      setLoadingCustomInput(true);
+      const sessionId = localStorage.getItem("sessionId");
+      const res = await fetch(
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/extract-topic-question",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, text: input }),
+        }
+      );
+
+      const data = await res.json();
+      router.push("/reflection?from=home");
+    } catch (err) {
+      console.error("Failed to extract topic/question:", err);
+      alert("Something went wrong.");
+      setLoadingCustomInput(false);
+    }
+  };
+
   return (
-    <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-screen flex flex-col justify-between px-5 py-8 font-sans">
+    <div className="max-w-[430px] mx-auto bg-[#FAF9F7] min-h-[92vh] flex flex-col gap-9 px-5 pb-8 font-sans">
       {/* Top + Scrollable Content */}
       <div className="flex flex-col justify-start mt-5">
         <h1 className="text-2xl font-bold text-[#222] mb-1">
@@ -187,6 +209,7 @@ useEffect(() => {
               {topics[selectedTopicIndex].questions.map((question, index) => (
                 <SwiperSlide key={index}>
                   <div
+                    onClick={handleStart}
                     className="w-[280px] h-[320px] mx-auto rounded-xl border border-black shadow-[4px_4px_0px_black] relative flex flex-col items-center justify-center p-6 text-center text-lg font-semibold"
                     style={{
                       backgroundColor:
@@ -204,41 +227,83 @@ useEffect(() => {
                       width={96}
                       height={96}
                     />
+                    {/* ➡️ Arrow circle */}
+                    <div className="absolute bottom-3 right-3 z-20 bg-white bg-opacity-70 rounded-full p-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 text-black"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </SwiperSlide>
               ))}
             </Swiper>
           </div>
         )}
-
-        {userCount && (
-          <div className="text-center text-3xl text-[#222] font-medium mb-6">
-            {userCount.toLocaleString()} users are working on this today
-          </div>
-        )}
       </div>
 
-      {/* Bottom button */}
-      <button
-        disabled={loading}
-        onClick={handleStart}
-        className={`w-full py-4 text-white text-lg font-semibold rounded-xl shadow-[4px_4px_0px_black] transition-all ${
-          loading ? "bg-[#A48CF1]/70" : "bg-[#A48CF1]"
-        }`}
-      >
-        {loading ? (
-          <div className="flex justify-center items-center gap-2">
-            <span>{loadingMessages[messageIndex]}</span>
-            <div className="bouncing-dots">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </div>
-        ) : (
-          "Start Challenge"
-        )}
-      </button>
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[430px] bg-white rounded-xl shadow-md px-4 py-3 flex items-center justify-between border border-gray-200">
+        <input
+          type="text"
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          placeholder="What would you like to post about today?"
+          className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-600"
+        />
+        <button
+          onClick={handleCustomTopicSubmit}
+          disabled={loadingCustomInput}
+          className="ml-3 bg-[#A48CF1] p-2 rounded-full shadow flex items-center justify-center w-9 h-9"
+        >
+          {loadingCustomInput ? (
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

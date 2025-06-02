@@ -158,7 +158,7 @@ export default function InsightPage() {
         <button
           className="w-full py-4 bg-[#A48CF1] text-white text-lg font-semibold rounded-xl shadow-[4px_4px_0px_black]"
           disabled={loading}
-          onClick={() => router.push("/reflection")}
+          onClick={() => router.push("/reflection?from=details")}
         >
           {loading ? "Preparing questions..." : "Proceed to Reflection"}
         </button>

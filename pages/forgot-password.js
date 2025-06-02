@@ -5,7 +5,7 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async () => {
-    const res = await fetch("http://localhost:5000/api/auth/request-reset", {
+    const res = await fetch("https://sophiabackend-82f7d870b4bb.herokuapp.com/api/auth/request-reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),

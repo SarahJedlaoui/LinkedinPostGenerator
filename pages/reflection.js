@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function ReflectionPage() {
   const router = useRouter();
+  const from = router.query.from || "details";
   const [questions, setQuestions] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [input, setInput] = useState("");
@@ -97,14 +98,22 @@ export default function ReflectionPage() {
     }
   };
 
+const handleGoBack = () => {
+    if (from === "home") {
+      router.push("/"); // go back to the topic selection
+    } else {
+      router.push("/details"); // go back to insight page
+    }
+  };
+
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-[#FAF9F7] px-5 py-6 flex flex-col font-sans">
       <div>
         {/* Back and title */}
         <div className="flex items-center gap-2 mb-3">
-          <Link href="/details">
-            <span className="text-2xl font-bold">←</span>
-          </Link>
+          
+            <span  onClick={handleGoBack} className="text-2xl font-bold">←</span>
+          
           <h1 className="text-xl font-bold">Share Your Thoughts</h1>
         </div>
 

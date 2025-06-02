@@ -23,6 +23,8 @@ const THEMES = {
 
 export default function PostPreview() {
   const router = useRouter();
+  const imagesRef = useRef(null);
+
   const [platform, setPlatform] = useState("LinkedIn");
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(null);
@@ -52,7 +54,11 @@ export default function PostPreview() {
   useEffect(() => {
     fetchDrafts();
   }, []);
-
+  useEffect(() => {
+    if (generatedImages.length > 0 && imagesRef.current) {
+      imagesRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [generatedImages]);
   const fetchDrafts = async () => {
     const sessionId = localStorage.getItem("sessionId");
     const res = await fetch(
@@ -315,7 +321,7 @@ export default function PostPreview() {
     setLoadingImages(true);
     try {
       const res = await fetch(
-        "http://localhost:5000/api/images/generate-social-images",
+        "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/images/generate-social-images",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -382,19 +388,13 @@ export default function PostPreview() {
                 />
               ) : (
                 <>
-                  <div className="min-h-[200px]">{postText}</div>
-                  <div className="mt-2 ">
-                    <button
-                      onClick={handleGenerateImages}
-                      disabled={loadingImages}
-                      className="mt-4 text-[#A48CF1] font-semibold  text-sm"
-                    >
-                      {loadingImages
-                        ? "Generating images..."
-                        : "✨ Generate Post Images"}
-                    </button>
+                  <div className="min-h-[200px]">
+                    {postText}
                     {generatedImages.length > 0 && (
-                      <div className="mt-6 overflow-x-auto no-scrollbar">
+                      <div
+                        ref={imagesRef}
+                        className="mt-6 overflow-x-auto no-scrollbar"
+                      >
                         <div className="flex space-x-4">
                           {generatedImages.map((img, index) => (
                             <div key={index} className="shrink-0 w-[200px]">
@@ -419,9 +419,43 @@ export default function PostPreview() {
                 </>
               )}
             </div>
-
+            <div className="sticky bottom-0 left-0 w-full bg-white px-4 py-1 ">
+              <button
+                onClick={handleGenerateImages}
+                disabled={loadingImages}
+                className="mt-4 text-[#A48CF1] font-semibold text-sm flex items-center gap-2"
+              >
+                {loadingImages ? (
+                  <>
+                    <svg
+                      className="w-4 h-4 animate-spin text-[#A48CF1]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Generating images...
+                  </>
+                ) : (
+                  "✨ Generate Post Images"
+                )}
+              </button>
+            </div>
             <div className="flex items-center px-4 py-2 border-t border-black/10 text-sm">
-              <div className="flex gap-11 text-lg text-black">
+              <div className="flex gap-16 text-lg text-black">
                 <button
                   onClick={handleCopy}
                   className="flex text-sm items-center gap-1"
