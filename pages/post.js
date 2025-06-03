@@ -362,159 +362,11 @@ export default function PostPreview() {
         </div>
 
         {/* Post Card Section */}
-        <div className="overflow-x-auto flex gap-4 pb-4 mb-4 no-scrollbar">
-          {/* Main Generated Post */}
-          <div className="w-[380px] min-w-[300px] h-[320px] flex flex-col rounded-xl border border-black bg-white shadow-[4px_4px_0px_black]">
-            <div
-              className={`${THEMES[platform].bg} rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2 flex justify-between items-center`}
-            >
-              <span>{loading ? "Please wait..." : "Your post is ready"}</span>
-              <span>{THEMES[platform].icon}</span>
-            </div>
-
-            <div
-              className="p-4 text-sm text-[#333] overflow-auto whitespace-pre-line"
-              style={{ minHeight: "200px", flexGrow: 1 }}
-            >
-              {loading ? (
-                <div className="min-h-[200px] flex items-center justify-center text-gray-500">
-                  Generating post...
-                </div>
-              ) : isInlineEditing ? (
-                <textarea
-                  value={editedPostText}
-                  onChange={(e) => setEditedPostText(e.target.value)}
-                  className="w-full h-full text-sm text-[#333] border border-[#ddd] rounded-lg p-2 resize-none"
-                />
-              ) : (
-                <>
-                  <div className="min-h-[200px]">
-                    {postText}
-                    {generatedImages.length > 0 && (
-                      <div
-                        ref={imagesRef}
-                        className="mt-6 overflow-x-auto no-scrollbar"
-                      >
-                        <div className="flex space-x-4">
-                          {generatedImages.map((img, index) => (
-                            <div key={index} className="shrink-0 w-[200px]">
-                              <img
-                                src={img}
-                                alt={`Generated ${index}`}
-                                className="rounded-xl shadow w-full"
-                              />
-                              <a
-                                href={img}
-                                download={`sophia-image-${index + 1}.png`}
-                                className="inline-block mt-2 text-xs bg-[#A48CF1] text-white px-2 py-1 rounded shadow"
-                              >
-                                Download Image {index + 1}
-                              </a>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="sticky bottom-0 left-0 w-full bg-white px-4 py-1 ">
-              <button
-                onClick={handleGenerateImages}
-                disabled={loadingImages}
-                className="mt-4 text-[#A48CF1] font-semibold text-sm flex items-center gap-2"
-              >
-                {loadingImages ? (
-                  <>
-                    <svg
-                      className="w-4 h-4 animate-spin text-[#A48CF1]"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
-                    </svg>
-                    Generating images...
-                  </>
-                ) : (
-                  "✨ Generate Post Images"
-                )}
-              </button>
-            </div>
-            <div className="flex items-center px-4 py-2 border-t border-black/10 text-sm">
-              <div className="flex gap-16 text-lg text-black">
-                <button
-                  onClick={handleCopy}
-                  className="flex text-sm items-center gap-1"
-                >
-                  <FiCopy />
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-                <button
-                  onClick={() => router.push("/journey")}
-                  className="text-md text-[#A48CF1] font-semibold"
-                >
-                  Finalize Post
-                </button>
-              </div>
-
-              <div className="flex gap-4 items-center ml-auto">
-                <button
-                  onClick={handleEditToggle}
-                  className="flex  text-sm items-center gap-1"
-                >
-                  {isInlineEditing ? "Save" : "Edit"}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Drafts */}
-          {drafts.map((draft, i) => (
-            <div
-              key={i}
-              className="min-w-[300px] h-[320px] relative rounded-xl border border-black bg-white shadow-[4px_4px_0px_black] flex flex-col"
-            >
-              <div className="bg-gray-800 rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2">
-                Draft #{i + 1}
-              </div>
-
-              <div className="p-4 text-sm text-[#333] overflow-auto flex-1 whitespace-pre-line">
-                {draft.content}
-              </div>
-
-              <div className="px-4 py-2 text-sm text-right text-[#A48CF1]">
-                Saved: {new Date(draft.editedAt).toLocaleDateString()}
-              </div>
-
-              <div className="absolute bottom-3 left-3 right-3">
-                <button
-                  onClick={() => handleSelectDraft(draft.content)}
-                  className="text-xs text-white bg-[#A48CF1] w-full rounded-xl py-2 shadow-[2px_2px_0px_black] font-semibold"
-                >
-                  📌 Use this as main post
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
 
         <div className="overflow-x-auto whitespace-nowrap border-b border-[#E7DCD7] text-sm mb-3 mt-5 no-scrollbar">
           <div className="flex gap-6 px-1">
             {[
+              { key: "content", label: "📝 Content" },
               { key: "chat", label: "💬 Chat" },
               { key: "rate", label: "✅ Rate" },
               { key: "highlights", label: "📌 Highlights" },
@@ -549,6 +401,160 @@ export default function PostPreview() {
                 await fetchDrafts();
               }}
             />
+          )}
+
+          {activeToolTab === "content" && (
+            <div className="overflow-x-auto flex gap-4 pb-4 no-scrollbar">
+              {/* Main Generated Post */}
+              <div className="w-[380px] min-w-[300px] h-full flex flex-col rounded-xl  bg-white ">
+                <div
+                  className={`${THEMES[platform].bg} rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2 flex justify-between items-center`}
+                >
+                  <span>
+                    {loading ? "Please wait..." : "Your post is ready"}
+                  </span>
+                  <span>{THEMES[platform].icon}</span>
+                </div>
+
+                <div
+                  className="p-4 text-sm text-[#333] overflow-auto whitespace-pre-line"
+                  style={{ minHeight: "200px", flexGrow: 1 }}
+                >
+                  {loading ? (
+                    <div className="min-h-[200px] flex items-center justify-center text-gray-500">
+                      Generating post...
+                    </div>
+                  ) : isInlineEditing ? (
+                    <textarea
+                      value={editedPostText}
+                      onChange={(e) => setEditedPostText(e.target.value)}
+                      className="w-full h-full text-sm text-[#333] border border-[#ddd] rounded-lg p-2 resize-none"
+                    />
+                  ) : (
+                    <>
+                      <div className="min-h-[200px]">
+                        {postText}
+                        {generatedImages.length > 0 && (
+                          <div
+                            ref={imagesRef}
+                            className="mt-6 overflow-x-auto no-scrollbar"
+                          >
+                            <div className="flex space-x-4">
+                              {generatedImages.map((img, index) => (
+                                <div key={index} className="shrink-0 w-[200px]">
+                                  <img
+                                    src={img}
+                                    alt={`Generated ${index}`}
+                                    className="rounded-xl shadow w-full"
+                                  />
+                                  <a
+                                    href={img}
+                                    download={`sophia-image-${index + 1}.png`}
+                                    className="inline-block mt-2 text-xs bg-[#A48CF1] text-white px-2 py-1 rounded shadow"
+                                  >
+                                    Download Image {index + 1}
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="sticky bottom-0 left-0 w-full bg-white px-4 py-1 ">
+                  <button
+                    onClick={handleGenerateImages}
+                    disabled={loadingImages}
+                    className="mt-4 text-[#A48CF1] font-semibold text-sm flex items-center gap-2"
+                  >
+                    {loadingImages ? (
+                      <>
+                        <svg
+                          className="w-4 h-4 animate-spin text-[#A48CF1]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                          />
+                        </svg>
+                        Generating images...
+                      </>
+                    ) : (
+                      "✨ Generate Post Images"
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-center px-4 py-2 border-t border-black/10 text-sm">
+                  <div className="flex gap-16 text-lg text-black">
+                    <button
+                      onClick={handleCopy}
+                      className="flex text-sm items-center gap-1"
+                    >
+                      <FiCopy />
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                    <button
+                      onClick={() => router.push("/journey")}
+                      className="text-md text-[#A48CF1] font-semibold"
+                    >
+                      Finalize Post
+                    </button>
+                  </div>
+
+                  <div className="flex gap-4 items-center ml-auto">
+                    <button
+                      onClick={handleEditToggle}
+                      className="flex  text-sm items-center gap-1"
+                    >
+                      {isInlineEditing ? "Save" : "Edit"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Drafts */}
+              {drafts.map((draft, i) => (
+                <div
+                  key={i}
+                  className="min-w-[300px] h-[620px] relative rounded-xl border border-black bg-white shadow-[4px_4px_0px_black] flex flex-col"
+                >
+                  <div className="bg-gray-800 rounded-[10px_10px_0px_0px] text-white text-sm font-medium px-4 py-2">
+                    Draft #{i + 1}
+                  </div>
+
+                  <div className="p-4 text-sm text-[#333] overflow-auto flex-1 whitespace-pre-line">
+                    {draft.content}
+                  </div>
+
+                  <div className="px-4 py-2 text-sm text-right text-[#A48CF1]">
+                    Saved: {new Date(draft.editedAt).toLocaleDateString()}
+                  </div>
+
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <button
+                      onClick={() => handleSelectDraft(draft.content)}
+                      className="text-xs text-white bg-[#A48CF1] w-full rounded-xl py-2 shadow-[2px_2px_0px_black] font-semibold"
+                    >
+                      📌 Use this as main post
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
           {activeToolTab === "rate" && showRating && (
