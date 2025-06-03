@@ -44,7 +44,7 @@ export default function PostPreview() {
   const [showRating, setShowRating] = useState(false);
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editedPostText, setEditedPostText] = useState("");
-  const [activeToolTab, setActiveToolTab] = useState("chat");
+  const [activeToolTab, setActiveToolTab] = useState("content");
   const [generatedImage, setGeneratedImage] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [generatedImages, setGeneratedImages] = useState([]);
