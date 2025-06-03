@@ -467,7 +467,7 @@ export default function PostPreview() {
                   <button
                     onClick={handleGenerateImages}
                     disabled={loadingImages}
-                    className="mt-4 text-[#A48CF1] font-semibold text-sm flex items-center gap-2"
+                    className="mt-1 text-[#A48CF1] font-semibold text-sm flex items-center gap-2"
                   >
                     {loadingImages ? (
                       <>
@@ -493,6 +493,8 @@ export default function PostPreview() {
                         </svg>
                         Generating images...
                       </>
+                    ) : generatedImages.length > 0 ? (
+                      "🔁 Regenerate Images"
                     ) : (
                       "✨ Generate Post Images"
                     )}
