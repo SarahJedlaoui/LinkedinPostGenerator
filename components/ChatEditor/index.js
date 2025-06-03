@@ -59,7 +59,7 @@ export default function ChatEditor({ onSave }) {
   };
 
   return (
-    <div className="bg-white border rounded-xl h-[780px] flex flex-col overflow-hidden">
+    <div className="bg-white border rounded-xl h-[680px] flex flex-col overflow-hidden">
       {/* Scrollable chat messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm">
         {chat.map((msg, i) => (
