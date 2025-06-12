@@ -50,15 +50,18 @@ export default function TrendingPage() {
         // 🧠 Create user session
         localStorage.removeItem("sessionId");
         let storedSessionId = localStorage.getItem("sessionId");
-
+        const userId = localStorage.getItem("userId"); // ✅ Fetch userId
+        console.log('userid',userId)
         if (!storedSessionId) {
           const sessionRes = await fetch(
             "https://sophiabackend-82f7d870b4bb.herokuapp.com/api/persona/session",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId }), // ✅ Include userId
             }
           );
+
           const sessionData = await sessionRes.json();
           storedSessionId = sessionData.sessionId;
           localStorage.setItem("sessionId", storedSessionId);
@@ -252,7 +255,7 @@ export default function TrendingPage() {
         )}
       </div>
 
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[430px] bg-white rounded-xl shadow-md px-4 py-3 flex items-center justify-between border border-gray-200 z-50">
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[430px] bg-white rounded-xl shadow-md px-4 py-3 flex items-center justify-between border border-gray-200 z-40">
         <input
           type="text"
           value={userInput}

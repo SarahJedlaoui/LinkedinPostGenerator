@@ -501,7 +501,7 @@ export default function PostPreview() {
                   </button>
                 </div>
                 <div className="flex items-center px-4 py-2 border-t border-black/10 text-sm">
-                  <div className="flex gap-16 text-lg text-black">
+                  <div className="flex gap-10 text-lg text-black">
                     <button
                       onClick={handleCopy}
                       className="flex text-sm items-center gap-1"
@@ -511,9 +511,15 @@ export default function PostPreview() {
                     </button>
                     <button
                       onClick={() => router.push("/journey")}
-                      className="text-md text-[#A48CF1] font-semibold"
+                      className="text-xs text-[#A48CF1] font-semibold"
                     >
                       Finalize Post
+                    </button>
+                    <button
+                      onClick={() => router.push("/saved")}
+                      className="text-xs text-[#A48CF1] font-semibold"
+                    >
+                      Save for later
                     </button>
                   </div>
 

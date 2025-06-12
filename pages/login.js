@@ -39,7 +39,7 @@ export default function SignupPage() {
           const separator = returnTo.includes("?") ? "&" : "?";
           router.push(`${returnTo}${separator}userId=${data.userId}`);
         } else {
-          router.push(`/topics?userId=${data.userId}`);
+          router.push(`/?userId=${data.userId}`);
         }
       } else {
         alert(data.error || "Login failed");
